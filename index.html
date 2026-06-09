@@ -3,467 +3,407 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control Financiero en Dólares</title>
+    <title>Control Financiero Mensual ($)</title>
     <style>
         :root {
-            --bg-color: #f7f9fc;
+            --bg-color: #f0f2f5;
             --card-bg: #ffffff;
-            --text-main: #2d3748;
+            --text-main: #1a202c;
             --text-muted: #718096;
-            --accent-blue: #3182ce;
-            --accent-blue-hover: #2b6cb0;
-            --income-color: #48bb78;
-            --income-bg: #f0fff4;
-            --expense-color: #f56565;
-            --expense-bg: #fff5f5;
+            --accent-blue: #2b6cb0;
+            --income-color: #38a169;
+            --expense-color: #e53e3e;
             --tithe-color: #805ad5;
-            --border-radius: 12px;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            --border: 1px solid #e2e8f0;
+            --border-dark: #2d3748;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
-            line-height: 1.6;
+            line-height: 1.5;
             padding: 2rem 1rem;
         }
 
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1, h2, h3 { margin-bottom: 1rem; }
 
-        h1, h2, h3 { color: var(--text-main); font-weight: 600; margin-bottom: 1rem; }
-
+        /* Estilos de Formularios (Minimalistas) */
         .card {
             background-color: var(--card-bg);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        /* Panel de Tasas Ajustable */
-        .bcv-panel { 
-            display: flex; 
-            gap: 1.5rem; 
-            justify-content: center; 
-            align-items: center; 
-            flex-wrap: wrap;
-        }
-        .bcv-panel label { font-weight: 600; color: var(--text-main); margin: 0; }
-        .bcv-panel input { width: 100px; padding: 0.4rem; text-align: center; font-weight: bold; }
-
-        .summary-grid, .averages-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .summary-box {
-            padding: 1.2rem;
             border-radius: 8px;
-            text-align: center;
-            border: var(--border);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
         }
 
-        .summary-box h4 { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
-        .summary-box p { font-size: 1.6rem; font-weight: 700; }
-        
-        .box-income { background-color: var(--income-bg); }
-        .box-income p { color: var(--income-color); }
-        .box-expense { background-color: var(--expense-bg); }
-        .box-expense p { color: var(--expense-color); }
-        .box-tithe { background-color: #faf5ff; }
-        .box-tithe p { color: var(--tithe-color); }
+        .bcv-panel { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; align-items: center;}
+        .bcv-panel input { width: 90px; padding: 0.3rem; text-align: center; }
 
-        form { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; align-items: end; }
+        form { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; align-items: end; }
         .input-group { display: flex; flex-direction: column; }
-        label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem; }
-        input, select { 
-            padding: 0.6rem; 
-            border: var(--border); 
-            border-radius: 6px; 
-            font-size: 1rem; 
-            outline: none; 
-            transition: border-color 0.2s;
-            background-color: #fff;
-        }
-        input:focus, select:focus { border-color: var(--accent-blue); }
-        
-        button {
-            background-color: var(--accent-blue);
-            color: white;
-            border: none;
-            padding: 0.7rem;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-        }
-        button:hover { background-color: var(--accent-blue-hover); }
-        button:active { transform: scale(0.98); }
+        label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.3rem; }
+        input, select { padding: 0.5rem; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 0.95rem; }
+        button { background-color: var(--accent-blue); color: white; border: none; padding: 0.6rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #2c5282; }
 
-        .tithe-preview { font-size: 0.85rem; color: var(--tithe-color); margin-top: 0.3rem; min-height: 1.2em; font-weight: 500;}
+        /* VISTA ESTILO EXCEL (Basado en la imagen) */
+        .excel-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            align-items: start;
+        }
 
-        .table-responsive { overflow-x: auto; }
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        .excel-block {
+            border: 3px solid black;
+            background-color: white;
             font-size: 0.9rem;
         }
-        th, td {
-            padding: 0.8rem;
-            text-align: left;
-            border-bottom: var(--border);
+
+        .excel-header-row {
+            display: flex;
+            background-color: #8c8c8c;
+            color: white;
+            font-weight: bold;
+            border-bottom: 2px solid black;
         }
-        th { background-color: #f8fafc; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
-        tr:hover { background-color: #f1f5f9; }
+
+        .excel-header-title {
+            flex: 1;
+            padding: 4px 8px;
+            border-right: 2px solid black;
+        }
+
+        .excel-header-amount {
+            width: 80px;
+            text-align: right;
+            padding: 4px 8px;
+            background-color: #a6a6a6;
+            color: black;
+            border-right: 2px solid black;
+        }
+
+        .excel-header-percent {
+            width: 50px;
+            text-align: center;
+            padding: 4px;
+            background-color: #fff200; /* Amarillo característico */
+            color: black;
+        }
+
+        .excel-item-row {
+            display: flex;
+            border-bottom: 1px solid black;
+        }
+        .excel-item-row:last-child { border-bottom: none; }
+
+        .excel-item-name {
+            flex: 1;
+            padding: 4px 8px;
+            border-right: 2px solid black;
+        }
+
+        .excel-item-amount {
+            width: 80px;
+            text-align: right;
+            padding: 4px 8px;
+            border-right: 2px solid black;
+            background-color: white;
+        }
         
-        .row-ingreso td:first-child { border-left: 4px solid var(--income-color); }
-        .row-egreso td:first-child { border-left: 4px solid var(--expense-color); }
+        .excel-item-empty { width: 50px; background-color: white; }
 
-        .btn-delete {
-            background-color: transparent;
-            color: var(--expense-color);
-            padding: 0.3rem 0.6rem;
-            font-size: 0.8rem;
-            border: 1px solid var(--expense-color);
-            border-radius: 4px;
-            cursor: pointer;
+        /* Cuadro Resumen Superior Central */
+        .summary-box {
+            border: 3px solid black;
+            width: fit-content;
+            margin: 0 auto 2rem auto;
+            background: white;
         }
-        .btn-delete:hover { background-color: var(--expense-color); color: white; }
-
-        .currency-container {
-            display: grid;
-            grid-template-columns: 70px 1fr;
-            gap: 0.3rem;
+        .summary-row {
+            display: flex;
+            border-bottom: 1px solid black;
+            font-weight: bold;
         }
+        .summary-row:last-child { border-bottom: none; }
+        .summary-label { padding: 4px 8px; width: 200px; background-color: #8c8c8c; color: white; border-right: 2px solid black;}
+        .summary-value { padding: 4px 8px; width: 100px; text-align: right; border-right: 2px solid black; }
+        .summary-pct { width: 60px; text-align: center; background-color: #fff200; padding: 4px; }
+        
+        .diezmo-preview { font-size: 0.8rem; color: var(--tithe-color); margin-top: 0.2rem; font-weight: bold; min-height: 1rem;}
+        .currency-container { display: flex; gap: 0.2rem; }
+        .currency-container select { width: 60px; }
+        .currency-container input { flex: 1; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1 style="text-align: center; margin-bottom: 2rem;">Control Financiero Personal ($)</h1>
+        <h1 style="text-align: center;">Control Financiero ($)</h1>
 
+        <!-- Convertidor -->
         <div class="card bcv-panel">
-            <div><strong>Referencia BCV:</strong></div>
-            <div>
-                <label for="tasa-usd-input">Dólar (Bs): </label>
-                <input type="number" id="tasa-usd-input" step="0.01" value="40.00">
-            </div>
-            <div>
-                <label for="tasa-eur-input">Euro (Bs): </label>
-                <input type="number" id="tasa-eur-input" step="0.01" value="44.00">
-            </div>
-            <div style="font-size: 0.8rem; color: var(--text-muted);" id="api-status">Intentando conectar tasa en vivo...</div>
+            <div><strong>Tasa Referencia:</strong></div>
+            <div><label>Dólar (Bs): </label><input type="number" id="tasa-usd-input" step="0.01" value="40.00"></div>
+            <div id="api-status" style="font-size: 0.85rem;">Conectando...</div>
         </div>
 
+        <!-- Registro de Transacciones -->
         <div class="card">
-            <h3>Registrar Movimiento</h3>
+            <h3>Ingresar Nuevo Movimiento</h3>
             <form id="finance-form">
                 <div class="input-group">
                     <label>Tipo</label>
                     <select id="tipo" required>
                         <option value="ingreso">Ingreso</option>
-                        <option value="egreso">Egreso</option>
+                        <option value="egreso">Egreso / Gasto</option>
                     </select>
                 </div>
                 <div class="input-group">
-                    <label>Categoría</label>
-                    <input type="text" id="categoria" list="categorias-comunes" placeholder="Ej. Barbería, Repostería..." required>
-                    <datalist id="categorias-comunes">
+                    <label>Categoría Principal</label>
+                    <input type="text" id="categoria" list="cat-list" placeholder="Ej. Casa, Alimentación..." required>
+                    <datalist id="cat-list">
                         <option value="Barbería">
                         <option value="Pedacito de Gracia">
                         <option value="Universidad">
-                        <option value="Servicios">
-                        <option value="Compras">
+                        <option value="Casa / Vivienda">
+                        <option value="Comida / Alimentación">
+                        <option value="Diezmos y Ofrendas">
                     </datalist>
                 </div>
                 <div class="input-group">
-                    <label>Subcategoría</label>
-                    <input type="text" id="subcategoria" placeholder="Ej. Corte, Marquesas, Internet...">
+                    <label>Subcategoría (Fila)</label>
+                    <input type="text" id="subcategoria" placeholder="Ej. Internet, Marquesas..." required>
                 </div>
                 <div class="input-group">
-                    <label>Monto Entrante/Saliente</label>
+                    <label>Monto</label>
                     <div class="currency-container">
-                        <select id="moneda">
-                            <option value="USD">$</option>
-                            <option value="VES">Bs</option>
-                        </select>
-                        <input type="number" id="monto" step="0.01" min="0" placeholder="0.00" required>
+                        <select id="moneda"><option value="USD">$</option><option value="VES">Bs</option></select>
+                        <input type="number" id="monto" step="0.01" min="0" required>
                     </div>
-                    <div class="tithe-preview" id="diezmo-preview"></div>
+                    <div class="diezmo-preview" id="diezmo-preview"></div>
                 </div>
                 <div class="input-group">
                     <label>Fecha</label>
-                    <input type="date" id="fecha" required>
+                    <input type="month" id="mes-registro" required> <!-- Selector de Mes -->
                 </div>
                 <div class="input-group">
-                    <button type="submit">Guardar Registro</button>
+                    <button type="submit">Agregar al Cuadro</button>
                 </div>
             </form>
         </div>
 
-        <div class="summary-grid">
-            <div class="summary-box box-income">
-                <h4>Ingresos Totales</h4>
-                <p id="total-ingresos">$0.00</p>
+        <!-- CUADRO ESTILO EXCEL -->
+        <h2 style="text-align: center; color: white; background: #2d3748; padding: 10px; border: 3px solid black; margin-bottom: 0;">
+            INGRESOS Y EGRESOS MENSUALES
+        </h2>
+        
+        <div style="background: #e2e8f0; padding: 20px; border: 3px solid black; border-top: none;">
+            
+            <!-- Resumen Central IND -->
+            <div class="summary-box" id="resumen-ind">
+                <!-- Se llena por JS -->
             </div>
-            <div class="summary-box box-expense">
-                <h4>Egresos Totales</h4>
-                <p id="total-egresos">$0.00</p>
-            </div>
-            <div class="summary-box box-tithe">
-                <h4>Diezmo Total ($)</h4>
-                <p id="total-diezmo">$0.00</p>
-            </div>
-            <div class="summary-box">
-                <h4>Balance Neto</h4>
-                <p id="balance-total">$0.00</p>
-            </div>
-        </div>
 
-        <div class="card">
-            <h3>Promedios de Rendimiento ($)</h3>
-            <div class="averages-grid">
-                <div class="summary-box">
-                    <h4>Diario</h4>
-                    <div style="font-size: 0.95rem; text-align: left; padding-left: 10px;">
-                        <span style="color: var(--income-color)">▲ Ing: <span id="prom-diario-ing">$0.00</span></span><br>
-                        <span style="color: var(--expense-color)">▼ Egr: <span id="prom-diario-egr">$0.00</span></span>
-                    </div>
-                </div>
-                <div class="summary-box">
-                    <h4>Semanal</h4>
-                    <div style="font-size: 0.95rem; text-align: left; padding-left: 10px;">
-                        <span style="color: var(--income-color)">▲ Ing: <span id="prom-sem-ing">$0.00</span></span><br>
-                        <span style="color: var(--expense-color)">▼ Egr: <span id="prom-sem-egr">$0.00</span></span>
-                    </div>
-                </div>
-                <div class="summary-box">
-                    <h4>Mensual</h4>
-                    <div style="font-size: 0.95rem; text-align: left; padding-left: 10px;">
-                        <span style="color: var(--income-color)">▲ Ing: <span id="prom-men-ing">$0.00</span></span><br>
-                        <span style="color: var(--expense-color)">▼ Egr: <span id="prom-men-egr">$0.00</span></span>
-                    </div>
-                </div>
-                <div class="summary-box">
-                    <h4>Anual</h4>
-                    <div style="font-size: 0.95rem; text-align: left; padding-left: 10px;">
-                        <span style="color: var(--income-color)">▲ Ing: <span id="prom-anu-ing">$0.00</span></span><br>
-                        <span style="color: var(--expense-color)">▼ Egr: <span id="prom-anu-egr">$0.00</span></span>
-                    </div>
-                </div>
+            <!-- Grilla de Categorías -->
+            <div class="excel-dashboard" id="excel-grid">
+                <!-- Los bloques se generan por JS -->
             </div>
-        </div>
-
-        <div class="card table-responsive">
-            <h3>Registro General Histórico</h3>
-            <table id="finance-table">
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Tipo</th>
-                        <th>Categoría / Subcategoría</th>
-                        <th>Monto Original</th>
-                        <th>Monto Convertido ($)</th>
-                        <th>Diezmo ($)</th>
-                        <th>Porcentaje (%)</th>
-                        <th>Acción</th>
-                    </tr>
-                </thead>
-                <tbody id="table-body"></tbody>
-            </table>
+            
+            <div style="margin-top: 2rem; text-align: right;">
+                <button onclick="limpiarDatosMes()" style="background: #e53e3e; padding: 5px 10px; font-size: 0.8rem;">Borrar datos del mes seleccionado</button>
+            </div>
         </div>
 
     </div>
 
     <script>
-        let transacciones = JSON.parse(localStorage.getItem('finanzas_dolares_data')) || [];
-
-        const form = document.getElementById('finance-form');
-        const tipoInput = document.getElementById('tipo');
-        const monedaInput = document.getElementById('moneda');
-        const montoInput = document.getElementById('monto');
-        const diezmoPreview = document.getElementById('diezmo-preview');
+        let transacciones = JSON.parse(localStorage.getItem('finanzas_excel_data')) || [];
         const tasaUsdInput = document.getElementById('tasa-usd-input');
-        const tasaEurInput = document.getElementById('tasa-eur-input');
         const apiStatus = document.getElementById('api-status');
 
-        document.getElementById('fecha').valueAsDate = new Date();
+        // Configurar mes actual por defecto
+        const hoy = new Date();
+        const mesActual = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+        document.getElementById('mes-registro').value = mesActual;
 
-        // Intentar obtener las tasas en vivo. Si falla, el usuario usa los inputs manuales.
         async function obtenerTasasBCV() {
             try {
                 const response = await fetch('https://pydolarvenezuela-api.vercel.app/api/v1/dollar?page=bcv');
-                if(!response.ok) throw new Error("Fallo en la respuesta");
                 const data = await response.json();
-                
                 tasaUsdInput.value = data.monitors.usd.price.toFixed(2);
-                tasaEurInput.value = data.monitors.eur.price.toFixed(2);
-                apiStatus.textContent = "Tasas actualizadas en vivo vía BCV.";
-                apiStatus.style.color = "var(--income-color)";
-                actualizarInterfaz();
+                apiStatus.textContent = "Tasa BCV al día.";
+                apiStatus.style.color = "green";
             } catch (error) {
-                console.error("Error cargando API:", error);
-                apiStatus.textContent = "Conexión fallida. Introduce la tasa manualmente si usas bolívares.";
-                apiStatus.style.color = "var(--expense-color)";
+                apiStatus.textContent = "Modo manual (Sin conexión).";
+                apiStatus.style.color = "red";
             }
         }
 
-        // Recalcular todo si el usuario cambia la tasa manualmente en la pantalla
-        tasaUsdInput.addEventListener('input', actualizarInterfaz);
+        document.getElementById('monto').addEventListener('input', calcularPreview);
+        document.getElementById('tipo').addEventListener('change', calcularPreview);
+        document.getElementById('mes-registro').addEventListener('change', actualizarVistaExcel);
+        tasaUsdInput.addEventListener('input', actualizarVistaExcel);
 
-        montoInput.addEventListener('input', calcularPreviewDiezmo);
-        tipoInput.addEventListener('change', calcularPreviewDiezmo);
-        monedaInput.addEventListener('change', calcularPreviewDiezmo);
-
-        function obtenerTasaActual() {
-            return parseFloat(tasaUsdInput.value) || 1;
-        }
-
-        function calcularPreviewDiezmo() {
-            if(tipoInput.value === 'ingreso' && montoInput.value) {
-                const monto = parseFloat(montoInput.value);
-                const tasa = obtenerTasaActual();
-                
-                // Calcular visualmente cuánto sería en dólares de inmediato
-                let montoEnUSD = monedaInput.value === 'USD' ? monto : monto / tasa;
-                const diezmoUSD = montoEnUSD * 0.10;
-                
-                diezmoPreview.textContent = `Diezmo sugerido (10%): $${diezmoUSD.toFixed(2)}`;
+        function calcularPreview() {
+            const tipo = document.getElementById('tipo').value;
+            const monto = parseFloat(document.getElementById('monto').value) || 0;
+            const moneda = document.getElementById('moneda').value;
+            const tasa = parseFloat(tasaUsdInput.value) || 1;
+            
+            if(tipo === 'ingreso' && monto > 0) {
+                const montoUSD = moneda === 'USD' ? monto : monto / tasa;
+                document.getElementById('diezmo-preview').textContent = `Diezmo (10%): $${(montoUSD * 0.1).toFixed(2)}`;
             } else {
-                diezmoPreview.textContent = '';
+                document.getElementById('diezmo-preview').textContent = '';
             }
         }
 
-        form.addEventListener('submit', (e) => {
+        document.getElementById('finance-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            const tipo = tipoInput.value;
-            const moneda = monedaInput.value;
-            const monto = parseFloat(montoInput.value);
-            const fecha = document.getElementById('fecha').value;
-            const tasa = obtenerTasaActual();
+            const tipo = document.getElementById('tipo').value;
+            const moneda = document.getElementById('moneda').value;
+            const monto = parseFloat(document.getElementById('monto').value);
+            const tasa = parseFloat(tasaUsdInput.value) || 1;
+            const mes = document.getElementById('mes-registro').value;
 
-            let montoUSD = 0;
-            if (moneda === 'USD') {
-                montoUSD = monto;
-            } else {
-                montoUSD = monto / tasa; // Conversión directa de Bs a $
-            }
+            const montoUSD = moneda === 'USD' ? monto : monto / tasa;
 
-            const nuevaTransaccion = {
+            // Ajuste automático de capitalización
+            let categoria = document.getElementById('categoria').value.trim();
+            let subcategoria = document.getElementById('subcategoria').value.trim();
+
+            transacciones.push({
                 id: Date.now(),
-                tipo,
-                monedaOriginal: moneda,
-                montoOriginal: monto,
-                montoUSD,
-                diezmoUSD: tipo === 'ingreso' ? montoUSD * 0.10 : 0,
-                categoria: document.getElementById('categoria').value,
-                subcategoria: document.getElementById('subcategoria').value,
-                fecha
-            };
+                mes, tipo, categoria, subcategoria, montoUSD
+            });
 
-            transacciones.push(nuevaTransaccion);
-            guardarDatos();
-            form.reset();
-            document.getElementById('fecha').valueAsDate = new Date();
-            diezmoPreview.textContent = '';
+            localStorage.setItem('finanzas_excel_data', JSON.stringify(transacciones));
+            document.getElementById('monto').value = '';
+            document.getElementById('subcategoria').value = '';
+            document.getElementById('diezmo-preview').textContent = '';
+            
+            actualizarVistaExcel();
         });
 
-        function eliminarTransaccion(id) {
-            transacciones = transacciones.filter(t => t.id !== id);
-            guardarDatos();
+        function limpiarDatosMes() {
+            const mesSelec = document.getElementById('mes-registro').value;
+            if(confirm(`¿Seguro que deseas borrar TODO el registro del mes ${mesSelec}?`)) {
+                transacciones = transacciones.filter(t => t.mes !== mesSelec);
+                localStorage.setItem('finanzas_excel_data', JSON.stringify(transacciones));
+                actualizarVistaExcel();
+            }
         }
 
-        function guardarDatos() {
-            localStorage.setItem('finanzas_dolares_data', JSON.stringify(transacciones));
-            actualizarInterfaz();
-        }
+        function actualizarVistaExcel() {
+            const mesSelec = document.getElementById('mes-registro').value;
+            const dataMes = transacciones.filter(t => t.mes === mesSelec);
 
-        function calcularDiasTranscurridos() {
-            if (transacciones.length === 0) return 1;
-            const fechas = transacciones.map(t => new Date(t.fecha));
-            const minFecha = new Date(Math.min(...fechas));
-            const maxFecha = new Date(Math.max(...fechas));
-            const diffTime = Math.abs(maxFecha - minFecha);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            return diffDays > 0 ? diffDays : 1; 
-        }
+            let totalIND = 0;
+            let totalGastos = 0;
+            const categoriasIngresos = {};
+            const categoriasEgresos = {};
 
-        function actualizarInterfaz() {
-            let tIngresosUSD = 0;
-            let tEgresosUSD = 0;
-            let tDiezmoUSD = 0;
-
-            // Recalcular montos en base a transacciones guardadas
-            transacciones.forEach(t => {
+            // Agrupar datos
+            dataMes.forEach(t => {
                 if(t.tipo === 'ingreso') {
-                    tIngresosUSD += t.montoUSD;
-                    tDiezmoUSD += t.diezmoUSD;
+                    totalIND += t.montoUSD;
+                    if(!categoriasIngresos[t.categoria]) categoriasIngresos[t.categoria] = { total: 0, subs: {} };
+                    categoriasIngresos[t.categoria].total += t.montoUSD;
+                    
+                    if(!categoriasIngresos[t.categoria].subs[t.subcategoria]) categoriasIngresos[t.categoria].subs[t.subcategoria] = 0;
+                    categoriasIngresos[t.categoria].subs[t.subcategoria] += t.montoUSD;
                 } else {
-                    tEgresosUSD += t.montoUSD;
+                    totalGastos += t.montoUSD;
+                    if(!categoriasEgresos[t.categoria]) categoriasEgresos[t.categoria] = { total: 0, subs: {} };
+                    categoriasEgresos[t.categoria].total += t.montoUSD;
+                    
+                    if(!categoriasEgresos[t.categoria].subs[t.subcategoria]) categoriasEgresos[t.categoria].subs[t.subcategoria] = 0;
+                    categoriasEgresos[t.categoria].subs[t.subcategoria] += t.montoUSD;
                 }
             });
 
-            // Escribir los totales principales en las tarjetas superiores
-            document.getElementById('total-ingresos').textContent = `$${tIngresosUSD.toFixed(2)}`;
-            document.getElementById('total-egresos').textContent = `$${tEgresosUSD.toFixed(2)}`;
-            document.getElementById('total-diezmo').textContent = `$${tDiezmoUSD.toFixed(2)}`;
-            document.getElementById('balance-total').textContent = `$${(tIngresosUSD - tEgresosUSD).toFixed(2)}`;
+            const balance = totalIND - totalGastos;
+            let pctBalance = totalIND > 0 ? ((balance / totalIND) * 100).toFixed(0) : 0;
 
-            // Calcular lapsos de tiempo para promedios
-            const dias = calcularDiasTranscurridos();
-            
-            document.getElementById('prom-diario-ing').textContent = `$${(tIngresosUSD / dias).toFixed(2)}`;
-            document.getElementById('prom-diario-egr').textContent = `$${(tEgresosUSD / dias).toFixed(2)}`;
-            
-            document.getElementById('prom-sem-ing').textContent = `$${(tIngresosUSD / (dias/7 < 1 ? 1 : dias/7)).toFixed(2)}`;
-            document.getElementById('prom-sem-egr').textContent = `$${(tEgresosUSD / (dias/7 < 1 ? 1 : dias/7)).toFixed(2)}`;
-            
-            document.getElementById('prom-men-ing').textContent = `$${(tIngresosUSD / (dias/30 < 1 ? 1 : dias/30)).toFixed(2)}`;
-            document.getElementById('prom-men-egr').textContent = `$${(tEgresosUSD / (dias/30 < 1 ? 1 : dias/30)).toFixed(2)}`;
-            
-            document.getElementById('prom-anu-ing').textContent = `$${(tIngresosUSD / (dias/365 < 1 ? 1 : dias/365)).toFixed(2)}`;
-            document.getElementById('prom-anu-egr').textContent = `$${(tEgresosUSD / (dias/365 < 1 ? 1 : dias/365)).toFixed(2)}`;
+            // Llenar Resumen IND
+            document.getElementById('resumen-ind').innerHTML = `
+                <div class="summary-row">
+                    <div class="summary-label">IND (Ingreso Neto Disp.)</div>
+                    <div class="summary-value">${totalIND.toFixed(0)}</div>
+                    <div class="summary-pct"></div>
+                </div>
+                <div class="summary-row">
+                    <div class="summary-label" style="background-color: #a6a6a6; color: black;">Gastos</div>
+                    <div class="summary-value">${totalGastos.toFixed(0)}</div>
+                    <div class="summary-pct"></div>
+                </div>
+                <div class="summary-row">
+                    <div class="summary-label" style="background-color: #d9d9d9; color: black;">Balance:</div>
+                    <div class="summary-value">${balance.toFixed(0)}</div>
+                    <div class="summary-pct">${pctBalance}%</div>
+                </div>
+            `;
 
-            // Renderizado limpio de la tabla estilo Excel
-            const tbody = document.getElementById('table-body');
-            tbody.innerHTML = '';
+            // Generar Bloques de la Grilla
+            const grid = document.getElementById('excel-grid');
+            grid.innerHTML = '';
 
-            transacciones.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)).forEach(t => {
-                let porcentaje = 0;
-                if(t.tipo === 'ingreso' && tIngresosUSD > 0) porcentaje = (t.montoUSD / tIngresosUSD) * 100;
-                if(t.tipo === 'egreso' && tEgresosUSD > 0) porcentaje = (t.montoUSD / tEgresosUSD) * 100;
+            // 1. Crear Bloque Único de Ingresos consolidado
+            if(Object.keys(categoriasIngresos).length > 0) {
+                let htmlIngresos = `
+                    <div class="excel-block">
+                        <div class="excel-header-row">
+                            <div class="excel-header-title">Ingresos Consolidados</div>
+                            <div class="excel-header-amount">${totalIND.toFixed(0)}</div>
+                            <div class="excel-header-percent"></div>
+                        </div>`;
+                
+                for(let cat in categoriasIngresos) {
+                    for(let sub in categoriasIngresos[cat].subs) {
+                        htmlIngresos += `
+                        <div class="excel-item-row">
+                            <div class="excel-item-name">${cat} - ${sub}</div>
+                            <div class="excel-item-amount">${categoriasIngresos[cat].subs[sub].toFixed(0)}</div>
+                            <div class="excel-item-empty"></div>
+                        </div>`;
+                    }
+                }
+                htmlIngresos += `</div>`;
+                grid.innerHTML += htmlIngresos;
+            }
 
-                const simboloOrig = t.monedaOriginal === 'USD' ? '$' : 'Bs';
-
-                const tr = document.createElement('tr');
-                tr.className = t.tipo === 'ingreso' ? 'row-ingreso' : 'row-egreso';
-                tr.innerHTML = `
-                    <td>${t.fecha}</td>
-                    <td style="text-transform: capitalize; font-weight: 500;">${t.tipo}</td>
-                    <td><strong>${t.categoria}</strong><br><span style="font-size:0.8rem; color:var(--text-muted)">${t.subcategoria || '-'}</span></td>
-                    <td>${t.montoOriginal.toFixed(2)} ${simboloOrig}</td>
-                    <td style="font-weight: 600;">$${t.montoUSD.toFixed(2)}</td>
-                    <td>${t.tipo === 'ingreso' ? '$' + t.diezmoUSD.toFixed(2) : '-'}</td>
-                    <td>${porcentaje.toFixed(1)}%</td>
-                    <td><button class="btn-delete" onclick="eliminarTransaccion(${t.id})">Borrar</button></td>
-                `;
-                tbody.appendChild(tr);
-            });
+            // 2. Crear Bloques Individuales por Categoría de Egreso
+            for(let cat in categoriasEgresos) {
+                const totalCat = categoriasEgresos[cat].total;
+                const pctCat = totalGastos > 0 ? ((totalCat / totalGastos) * 100).toFixed(0) : 0;
+                
+                let htmlBloque = `
+                    <div class="excel-block">
+                        <div class="excel-header-row">
+                            <div class="excel-header-title">${cat}</div>
+                            <div class="excel-header-amount">${totalCat.toFixed(0)}</div>
+                            <div class="excel-header-percent">${pctCat}%</div>
+                        </div>`;
+                
+                for(let sub in categoriasEgresos[cat].subs) {
+                    htmlBloque += `
+                        <div class="excel-item-row">
+                            <div class="excel-item-name">${sub}</div>
+                            <div class="excel-item-amount">${categoriasEgresos[cat].subs[sub].toFixed(0)}</div>
+                            <div class="excel-item-empty"></div>
+                        </div>`;
+                }
+                htmlBloque += `</div>`;
+                grid.innerHTML += htmlBloque;
+            }
         }
 
-        // Ejecución inicial al abrir la página
         obtenerTasasBCV();
-        actualizarInterfaz();
+        actualizarVistaExcel();
     </script>
 </body>
 </html>
