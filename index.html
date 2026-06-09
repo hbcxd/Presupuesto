@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control Financiero Multimoneda</title>
+    <title>Control Financiero en Dólares</title>
     <style>
         :root {
             --bg-color: #f7f9fc;
@@ -47,9 +47,16 @@
             margin-bottom: 1.5rem;
         }
 
-        .bcv-panel { display: flex; gap: 2rem; justify-content: center; align-items: center; }
-        .bcv-panel div { font-size: 1.1rem; }
-        .bcv-panel span { font-weight: 700; color: var(--accent-blue); }
+        /* Panel de Tasas Ajustable */
+        .bcv-panel { 
+            display: flex; 
+            gap: 1.5rem; 
+            justify-content: center; 
+            align-items: center; 
+            flex-wrap: wrap;
+        }
+        .bcv-panel label { font-weight: 600; color: var(--text-main); margin: 0; }
+        .bcv-panel input { width: 100px; padding: 0.4rem; text-align: center; font-weight: bold; }
 
         .summary-grid, .averages-grid {
             display: grid;
@@ -66,8 +73,7 @@
         }
 
         .summary-box h4 { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
-        .summary-box p { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.2rem; }
-        .summary-box small { display: block; color: var(--text-muted); font-size: 0.85rem; }
+        .summary-box p { font-size: 1.6rem; font-weight: 700; }
         
         .box-income { background-color: var(--income-bg); }
         .box-income p { color: var(--income-color); }
@@ -139,18 +145,24 @@
             grid-template-columns: 70px 1fr;
             gap: 0.3rem;
         }
-
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1 style="text-align: center; margin-bottom: 2rem;">Control Financiero Personal</h1>
+        <h1 style="text-align: center; margin-bottom: 2rem;">Control Financiero Personal ($)</h1>
 
         <div class="card bcv-panel">
-            <div><strong>Tasas Oficiales BCV:</strong></div>
-            <div>Dólar (USD): <span id="tasa-usd">Cargando...</span></div>
-            <div>Euro (EUR): <span id="tasa-eur">Cargando...</span></div>
+            <div><strong>Referencia BCV:</strong></div>
+            <div>
+                <label for="tasa-usd-input">Dólar (Bs): </label>
+                <input type="number" id="tasa-usd-input" step="0.01" value="40.00">
+            </div>
+            <div>
+                <label for="tasa-eur-input">Euro (Bs): </label>
+                <input type="number" id="tasa-eur-input" step="0.01" value="44.00">
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);" id="api-status">Intentando conectar tasa en vivo...</div>
         </div>
 
         <div class="card">
@@ -179,11 +191,11 @@
                     <input type="text" id="subcategoria" placeholder="Ej. Corte, Marquesas, Internet...">
                 </div>
                 <div class="input-group">
-                    <label>Monto</label>
+                    <label>Monto Entrante/Saliente</label>
                     <div class="currency-container">
                         <select id="moneda">
-                            <option value="VES">Bs</option>
                             <option value="USD">$</option>
+                            <option value="VES">Bs</option>
                         </select>
                         <input type="number" id="monto" step="0.01" min="0" placeholder="0.00" required>
                     </div>
@@ -202,62 +214,58 @@
         <div class="summary-grid">
             <div class="summary-box box-income">
                 <h4>Ingresos Totales</h4>
-                <p id="total-ingresos-bs">0.00 Bs</p>
-                <small id="total-ingresos-usd">$0.00</small>
+                <p id="total-ingresos">$0.00</p>
             </div>
             <div class="summary-box box-expense">
                 <h4>Egresos Totales</h4>
-                <p id="total-egresos-bs">0.00 Bs</p>
-                <small id="total-egresos-usd">$0.00</small>
+                <p id="total-egresos">$0.00</p>
             </div>
             <div class="summary-box box-tithe">
-                <h4>Diezmo Acumulado</h4>
-                <p id="total-diezmo-bs">0.00 Bs</p>
-                <small id="total-diezmo-usd">$0.00</small>
+                <h4>Diezmo Total ($)</h4>
+                <p id="total-diezmo">$0.00</p>
             </div>
             <div class="summary-box">
                 <h4>Balance Neto</h4>
-                <p id="balance-total-bs">0.00 Bs</p>
-                <small id="balance-total-usd">$0.00</small>
+                <p id="balance-total">$0.00</p>
             </div>
         </div>
 
         <div class="card">
-            <h3>Promedios Estimados (Histórico diario, semanal, mensual y anual)</h3>
+            <h3>Promedios de Rendimiento ($)</h3>
             <div class="averages-grid">
                 <div class="summary-box">
                     <h4>Diario</h4>
-                    <div style="font-size: 0.9rem; text-align: left; padding-left: 10px;">
-                        <span style="color: var(--income-color)">▲ Ing: <span id="prom-diario-ing">0.00 Bs</span></span><br>
-                        <span style="color: var(--expense-color)">▼ Egr: <span id="prom-diario-egr">0.00 Bs</span></span>
+                    <div style="font-size: 0.95rem; text-align: left; padding-left: 10px;">
+                        <span style="color: var(--income-color)">▲ Ing: <span id="prom-diario-ing">$0.00</span></span><br>
+                        <span style="color: var(--expense-color)">▼ Egr: <span id="prom-diario-egr">$0.00</span></span>
                     </div>
                 </div>
                 <div class="summary-box">
                     <h4>Semanal</h4>
-                    <div style="font-size: 0.9rem; text-align: left; padding-left: 10px;">
-                        <span style="color: var(--income-color)">▲ Ing: <span id="prom-sem-ing">0.00 Bs</span></span><br>
-                        <span style="color: var(--expense-color)">▼ Egr: <span id="prom-sem-egr">0.00 Bs</span></span>
+                    <div style="font-size: 0.95rem; text-align: left; padding-left: 10px;">
+                        <span style="color: var(--income-color)">▲ Ing: <span id="prom-sem-ing">$0.00</span></span><br>
+                        <span style="color: var(--expense-color)">▼ Egr: <span id="prom-sem-egr">$0.00</span></span>
                     </div>
                 </div>
                 <div class="summary-box">
                     <h4>Mensual</h4>
-                    <div style="font-size: 0.9rem; text-align: left; padding-left: 10px;">
-                        <span style="color: var(--income-color)">▲ Ing: <span id="prom-men-ing">0.00 Bs</span></span><br>
-                        <span style="color: var(--expense-color)">▼ Egr: <span id="prom-men-egr">0.00 Bs</span></span>
+                    <div style="font-size: 0.95rem; text-align: left; padding-left: 10px;">
+                        <span style="color: var(--income-color)">▲ Ing: <span id="prom-men-ing">$0.00</span></span><br>
+                        <span style="color: var(--expense-color)">▼ Egr: <span id="prom-men-egr">$0.00</span></span>
                     </div>
                 </div>
                 <div class="summary-box">
                     <h4>Anual</h4>
-                    <div style="font-size: 0.9rem; text-align: left; padding-left: 10px;">
-                        <span style="color: var(--income-color)">▲ Ing: <span id="prom-anu-ing">0.00 Bs</span></span><br>
-                        <span style="color: var(--expense-color)">▼ Egr: <span id="prom-anu-egr">0.00 Bs</span></span>
+                    <div style="font-size: 0.95rem; text-align: left; padding-left: 10px;">
+                        <span style="color: var(--income-color)">▲ Ing: <span id="prom-anu-ing">$0.00</span></span><br>
+                        <span style="color: var(--expense-color)">▼ Egr: <span id="prom-anu-egr">$0.00</span></span>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="card table-responsive">
-            <h3>Registro Detallado de Transacciones</h3>
+            <h3>Registro General Histórico</h3>
             <table id="finance-table">
                 <thead>
                     <tr>
@@ -265,11 +273,9 @@
                         <th>Tipo</th>
                         <th>Categoría / Subcategoría</th>
                         <th>Monto Original</th>
-                        <th>Monto (Bs)</th>
-                        <th>Monto ($)</th>
-                        <th>Diezmo (Bs)</th>
+                        <th>Monto Convertido ($)</th>
                         <th>Diezmo ($)</th>
-                        <th>% Pactado</th>
+                        <th>Porcentaje (%)</th>
                         <th>Acción</th>
                     </tr>
                 </thead>
@@ -280,69 +286,77 @@
     </div>
 
     <script>
-        let tasaUSD = 1; 
-        let tasaEUR = 1;
-        let transacciones = JSON.parse(localStorage.getItem('finanzas_multimoneda_data')) || [];
+        let transacciones = JSON.parse(localStorage.getItem('finanzas_dolares_data')) || [];
 
         const form = document.getElementById('finance-form');
         const tipoInput = document.getElementById('tipo');
         const monedaInput = document.getElementById('moneda');
         const montoInput = document.getElementById('monto');
         const diezmoPreview = document.getElementById('diezmo-preview');
+        const tasaUsdInput = document.getElementById('tasa-usd-input');
+        const tasaEurInput = document.getElementById('tasa-eur-input');
+        const apiStatus = document.getElementById('api-status');
 
         document.getElementById('fecha').valueAsDate = new Date();
 
-        // Obtener tasas BCV desde API pública
+        // Intentar obtener las tasas en vivo. Si falla, el usuario usa los inputs manuales.
         async function obtenerTasasBCV() {
             try {
                 const response = await fetch('https://pydolarvenezuela-api.vercel.app/api/v1/dollar?page=bcv');
+                if(!response.ok) throw new Error("Fallo en la respuesta");
                 const data = await response.json();
-                tasaUSD = data.monitors.usd.price;
-                tasaEUR = data.monitors.eur.price;
                 
-                document.getElementById('tasa-usd').textContent = `${tasaUSD.toFixed(2)} Bs`;
-                document.getElementById('tasa-eur').textContent = `${tasaEUR.toFixed(2)} Bs`;
+                tasaUsdInput.value = data.monitors.usd.price.toFixed(2);
+                tasaEurInput.value = data.monitors.eur.price.toFixed(2);
+                apiStatus.textContent = "Tasas actualizadas en vivo vía BCV.";
+                apiStatus.style.color = "var(--income-color)";
                 actualizarInterfaz();
             } catch (error) {
-                console.error("Error al conectar con la API de tasas:", error);
-                document.getElementById('tasa-usd').textContent = "Error de conexión";
-                document.getElementById('tasa-eur').textContent = "Error de conexión";
+                console.error("Error cargando API:", error);
+                apiStatus.textContent = "Conexión fallida. Introduce la tasa manualmente si usas bolívares.";
+                apiStatus.style.color = "var(--expense-color)";
             }
         }
 
-        // Eventos para calcular el diezmo dinámicamente en el formulario
+        // Recalcular todo si el usuario cambia la tasa manualmente en la pantalla
+        tasaUsdInput.addEventListener('input', actualizarInterfaz);
+
         montoInput.addEventListener('input', calcularPreviewDiezmo);
         tipoInput.addEventListener('change', calcularPreviewDiezmo);
         monedaInput.addEventListener('change', calcularPreviewDiezmo);
 
+        function obtenerTasaActual() {
+            return parseFloat(tasaUsdInput.value) || 1;
+        }
+
         function calcularPreviewDiezmo() {
             if(tipoInput.value === 'ingreso' && montoInput.value) {
                 const monto = parseFloat(montoInput.value);
-                const diezmo = monto * 0.10;
-                const simbolo = monedaInput.value === 'USD' ? '$' : 'Bs';
-                diezmoPreview.textContent = `Diezmo automático (10%): ${diezmo.toFixed(2)} ${simbolo}`;
+                const tasa = obtenerTasaActual();
+                
+                // Calcular visualmente cuánto sería en dólares de inmediato
+                let montoEnUSD = monedaInput.value === 'USD' ? monto : monto / tasa;
+                const diezmoUSD = montoEnUSD * 0.10;
+                
+                diezmoPreview.textContent = `Diezmo sugerido (10%): $${diezmoUSD.toFixed(2)}`;
             } else {
                 diezmoPreview.textContent = '';
             }
         }
 
-        // Procesar y registrar el movimiento
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             const tipo = tipoInput.value;
             const moneda = monedaInput.value;
             const monto = parseFloat(montoInput.value);
             const fecha = document.getElementById('fecha').value;
+            const tasa = obtenerTasaActual();
 
-            let montoBs = 0;
             let montoUSD = 0;
-
             if (moneda === 'USD') {
                 montoUSD = monto;
-                montoBs = monto * tasaUSD;
             } else {
-                montoBs = monto;
-                montoUSD = tasaUSD > 0 ? monto / tasaUSD : 0;
+                montoUSD = monto / tasa; // Conversión directa de Bs a $
             }
 
             const nuevaTransaccion = {
@@ -350,9 +364,7 @@
                 tipo,
                 monedaOriginal: moneda,
                 montoOriginal: monto,
-                montoBs,
                 montoUSD,
-                diezmoBs: tipo === 'ingreso' ? montoBs * 0.10 : 0,
                 diezmoUSD: tipo === 'ingreso' ? montoUSD * 0.10 : 0,
                 categoria: document.getElementById('categoria').value,
                 subcategoria: document.getElementById('subcategoria').value,
@@ -372,7 +384,7 @@
         }
 
         function guardarDatos() {
-            localStorage.setItem('finanzas_multimoneda_data', JSON.stringify(transacciones));
+            localStorage.setItem('finanzas_dolares_data', JSON.stringify(transacciones));
             actualizarInterfaz();
         }
 
@@ -387,58 +399,49 @@
         }
 
         function actualizarInterfaz() {
-            let tIngresosBs = 0, tIngresosUSD = 0;
-            let tEgresosBs = 0, tEgresosUSD = 0;
-            let tDiezmoBs = 0, tDiezmoUSD = 0;
+            let tIngresosUSD = 0;
+            let tEgresosUSD = 0;
+            let tDiezmoUSD = 0;
 
+            // Recalcular montos en base a transacciones guardadas
             transacciones.forEach(t => {
                 if(t.tipo === 'ingreso') {
-                    tIngresosBs += t.montoBs;
                     tIngresosUSD += t.montoUSD;
-                    tDiezmoBs += t.diezmoBs;
                     tDiezmoUSD += t.diezmoUSD;
                 } else {
-                    tEgresosBs += t.montoBs;
                     tEgresosUSD += t.montoUSD;
                 }
             });
 
-            // Asignar totales a las tarjetas superiores
-            document.getElementById('total-ingresos-bs').textContent = `${tIngresosBs.toFixed(2)} Bs`;
-            document.getElementById('total-ingresos-usd').textContent = `$${tIngresosUSD.toFixed(2)}`;
-            
-            document.getElementById('total-egresos-bs').textContent = `${tEgresosBs.toFixed(2)} Bs`;
-            document.getElementById('total-egresos-usd').textContent = `$${tEgresosUSD.toFixed(2)}`;
-            
-            document.getElementById('total-diezmo-bs').textContent = `${tDiezmoBs.toFixed(2)} Bs`;
-            document.getElementById('total-diezmo-usd').textContent = `$${tDiezmoUSD.toFixed(2)}`;
-            
-            document.getElementById('balance-total-bs').textContent = `${(tIngresosBs - tEgresosBs).toFixed(2)} Bs`;
-            document.getElementById('balance-total-usd').textContent = `$${(tIngresosUSD - tEgresosUSD).toFixed(2)}`;
+            // Escribir los totales principales en las tarjetas superiores
+            document.getElementById('total-ingresos').textContent = `$${tIngresosUSD.toFixed(2)}`;
+            document.getElementById('total-egresos').textContent = `$${tEgresosUSD.toFixed(2)}`;
+            document.getElementById('total-diezmo').textContent = `$${tDiezmoUSD.toFixed(2)}`;
+            document.getElementById('balance-total').textContent = `$${(tIngresosUSD - tEgresosUSD).toFixed(2)}`;
 
-            // Cálculo matemático de los promedios
+            // Calcular lapsos de tiempo para promedios
             const dias = calcularDiasTranscurridos();
             
-            document.getElementById('prom-diario-ing').textContent = `${(tIngresosBs / dias).toFixed(2)} Bs`;
-            document.getElementById('prom-diario-egr').textContent = `${(tEgresosBs / dias).toFixed(2)} Bs`;
+            document.getElementById('prom-diario-ing').textContent = `$${(tIngresosUSD / dias).toFixed(2)}`;
+            document.getElementById('prom-diario-egr').textContent = `$${(tEgresosUSD / dias).toFixed(2)}`;
             
-            document.getElementById('prom-sem-ing').textContent = `${(tIngresosBs / (dias/7 < 1 ? 1 : dias/7)).toFixed(2)} Bs`;
-            document.getElementById('prom-sem-egr').textContent = `${(tEgresosBs / (dias/7 < 1 ? 1 : dias/7)).toFixed(2)} Bs`;
+            document.getElementById('prom-sem-ing').textContent = `$${(tIngresosUSD / (dias/7 < 1 ? 1 : dias/7)).toFixed(2)}`;
+            document.getElementById('prom-sem-egr').textContent = `$${(tEgresosUSD / (dias/7 < 1 ? 1 : dias/7)).toFixed(2)}`;
             
-            document.getElementById('prom-men-ing').textContent = `${(tIngresosBs / (dias/30 < 1 ? 1 : dias/30)).toFixed(2)} Bs`;
-            document.getElementById('prom-men-egr').textContent = `${(tEgresosBs / (dias/30 < 1 ? 1 : dias/30)).toFixed(2)} Bs`;
+            document.getElementById('prom-men-ing').textContent = `$${(tIngresosUSD / (dias/30 < 1 ? 1 : dias/30)).toFixed(2)}`;
+            document.getElementById('prom-men-egr').textContent = `$${(tEgresosUSD / (dias/30 < 1 ? 1 : dias/30)).toFixed(2)}`;
             
-            document.getElementById('prom-anu-ing').textContent = `${(tIngresosBs / (dias/365 < 1 ? 1 : dias/365)).toFixed(2)} Bs`;
-            document.getElementById('prom-anu-egr').textContent = `${(tEgresosBs / (dias/365 < 1 ? 1 : dias/365)).toFixed(2)} Bs`;
+            document.getElementById('prom-anu-ing').textContent = `$${(tIngresosUSD / (dias/365 < 1 ? 1 : dias/365)).toFixed(2)}`;
+            document.getElementById('prom-anu-egr').textContent = `$${(tEgresosUSD / (dias/365 < 1 ? 1 : dias/365)).toFixed(2)}`;
 
-            // Construcción del cuadro tipo Excel
+            // Renderizado limpio de la tabla estilo Excel
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
 
             transacciones.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)).forEach(t => {
                 let porcentaje = 0;
-                if(t.tipo === 'ingreso' && tIngresosBs > 0) porcentaje = (t.montoBs / tIngresosBs) * 100;
-                if(t.tipo === 'egreso' && tEgresosBs > 0) porcentaje = (t.montoBs / tEgresosBs) * 100;
+                if(t.tipo === 'ingreso' && tIngresosUSD > 0) porcentaje = (t.montoUSD / tIngresosUSD) * 100;
+                if(t.tipo === 'egreso' && tEgresosUSD > 0) porcentaje = (t.montoUSD / tEgresosUSD) * 100;
 
                 const simboloOrig = t.monedaOriginal === 'USD' ? '$' : 'Bs';
 
@@ -449,9 +452,7 @@
                     <td style="text-transform: capitalize; font-weight: 500;">${t.tipo}</td>
                     <td><strong>${t.categoria}</strong><br><span style="font-size:0.8rem; color:var(--text-muted)">${t.subcategoria || '-'}</span></td>
                     <td>${t.montoOriginal.toFixed(2)} ${simboloOrig}</td>
-                    <td>${t.montoBs.toFixed(2)} Bs</td>
-                    <td>$${t.montoUSD.toFixed(2)}</td>
-                    <td>${t.tipo === 'ingreso' ? t.diezmoBs.toFixed(2) + ' Bs' : '-'}</td>
+                    <td style="font-weight: 600;">$${t.montoUSD.toFixed(2)}</td>
                     <td>${t.tipo === 'ingreso' ? '$' + t.diezmoUSD.toFixed(2) : '-'}</td>
                     <td>${porcentaje.toFixed(1)}%</td>
                     <td><button class="btn-delete" onclick="eliminarTransaccion(${t.id})">Borrar</button></td>
@@ -460,7 +461,7 @@
             });
         }
 
-        // Ejecutar carga inicial
+        // Ejecución inicial al abrir la página
         obtenerTasasBCV();
         actualizarInterfaz();
     </script>
