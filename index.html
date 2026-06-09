@@ -103,6 +103,9 @@
         .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .budget-bar { height: 8px; border-radius: 4px; background-color: var(--expense-color); margin-top: 5px; }
 
+        /* Contenedor de Filtros */
+        .filter-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) 100px; gap: 1rem; background: #f8fafc; padding: 1rem; border-radius: 8px; border: var(--border); margin-bottom: 1rem; align-items: flex-end; }
+
         /* Modal Styles */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
         .modal.active { display: flex; animation: fadeIn 0.2s; }
@@ -125,6 +128,9 @@
             
             .grid-form { grid-template-columns: 1fr; gap: 1rem; }
             
+            .filter-container { grid-template-columns: 1fr; gap: 0.8rem; }
+            .filter-container button { width: 100%; }
+
             .action-btns { flex-direction: column; gap: 0.4rem; }
             .btn-edit, .btn-delete { text-align: center; width: 100%; padding: 0.5rem; }
             
@@ -156,6 +162,7 @@
     </nav>
 
     <div class="main-content">
+        <!-- SECCIÓN INICIO -->
         <div id="inicio" class="section active">
             <div class="card bcv-panel">
                 <div style="display: flex; flex-direction: column;">
@@ -227,6 +234,28 @@
 
             <div class="card">
                 <h3>Historial General</h3>
+                
+                <!-- PANEL DE BUSQUEDA Y FILTROS -->
+                <div class="filter-container">
+                    <div class="input-group">
+                        <label>Desde (Fecha)</label>
+                        <input type="date" id="filtro-fecha-inicio">
+                    </div>
+                    <div class="input-group">
+                        <label>Hasta (Fecha)</label>
+                        <input type="date" id="filtro-fecha-fin">
+                    </div>
+                    <div class="input-group">
+                        <label>Tipo de Movimiento</label>
+                        <select id="filtro-tipo">
+                            <option value="todos">Todos</option>
+                            <option value="ingreso">Solo Ingresos</option>
+                            <option value="egreso">Solo Egresos</option>
+                        </select>
+                    </div>
+                    <button class="btn-outline" onclick="limpiarFiltros()" style="padding: 0.65rem; font-size: 0.9rem;">Limpiar</button>
+                </div>
+
                 <div class="table-responsive">
                     <table id="finance-table">
                         <thead>
@@ -246,6 +275,7 @@
             </div>
         </div>
 
+        <!-- SECCIÓN PRESUPUESTO -->
         <div id="presupuesto" class="section">
             <div class="card">
                 <h3>Análisis de Gasto Mensual</h3>
@@ -276,6 +306,7 @@
             </div>
         </div>
 
+        <!-- SECCIÓN DIEZMO -->
         <div id="diezmo" class="section">
             <div class="card">
                 <h3>Cuadro Semanal de Diezmos</h3>
@@ -303,6 +334,7 @@
             </div>
         </div>
 
+        <!-- SECCIÓN GASTOS FIJOS -->
         <div id="gastos" class="section">
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
@@ -346,6 +378,7 @@
         </div>
     </div>
 
+    <!-- MODAL PARA EDITAR TRANSACCIÓN -->
     <div class="modal" id="edit-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -428,9 +461,26 @@
         const tasaUsdInput = document.getElementById('tasa-usd-input');
         const apiStatus = document.getElementById('api-status');
 
+        // Referencias de Elementos de Filtro
+        const filtroFechaInicio = document.getElementById('filtro-fecha-inicio');
+        const filtroFechaFin = document.getElementById('filtro-fecha-fin');
+        const filtroTipo = document.getElementById('filtro-tipo');
+
         document.getElementById('fecha').valueAsDate = new Date();
         const mesActual = new Date().toISOString().slice(0,7);
         document.getElementById('mes-presupuesto').value = mesActual;
+
+        // --- ESCUCHADORES DE FILTROS ---
+        filtroFechaInicio.addEventListener('change', actualizarInterfaz);
+        filtroFechaFin.addEventListener('change', actualizarInterfaz);
+        filtroTipo.addEventListener('change', actualizarInterfaz);
+
+        function limpiarFiltros() {
+            filtroFechaInicio.value = '';
+            filtroFechaFin.value = '';
+            filtroTipo.value = 'todos';
+            actualizarInterfaz();
+        }
 
         // --- NAVEGACIÓN MENÚ ---
         function toggleMenu() {
@@ -609,10 +659,11 @@
             }
         }
 
-        // --- INICIO: RESUMEN Y TABLA ---
+        // --- INICIO: RESUMEN Y TABLA CON FILTROS ---
         function actualizarInterfaz() {
             let tIngresos = 0, tEgresos = 0, tDiezmo = 0;
 
+            // Primero calculamos totales globales de TODA la data para las tarjetas superiores
             transacciones.forEach(t => {
                 if(t.tipo === 'ingreso') {
                     tIngresos += t.montoUSD;
@@ -629,10 +680,27 @@
             document.getElementById('total-egresos').textContent = `$${tEgresos.toFixed(2)}`;
             document.getElementById('balance-total').textContent = `$${netoDisponible.toFixed(2)}`;
 
+            // Ahora aplicamos las reglas de filtros para mostrar en la tabla
+            const fInicio = filtroFechaInicio.value;
+            const fFin = filtroFechaFin.value;
+            const fTipo = filtroTipo.value;
+
+            let transaccionesFiltradas = transacciones.filter(t => {
+                // Filtro de fecha inicio
+                if (fInicio && t.fecha < fInicio) return false;
+                // Filtro de fecha fin
+                if (fFin && t.fecha > fFin) return false;
+                // Filtro de tipo
+                if (fTipo !== 'todos' && t.tipo !== fTipo) return false;
+                
+                return true;
+            });
+
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
 
-            transacciones.slice().reverse().forEach(t => {
+            // Renderizar la tabla con la data filtrada (cronológicamente inversa)
+            transaccionesFiltradas.slice().reverse().forEach(t => {
                 const simboloOrig = t.monedaOriginal === 'USD' ? '$' : 'Bs';
                 tbody.innerHTML += `
                     <tr>
@@ -651,6 +719,10 @@
                     </tr>
                 `;
             });
+
+            if(transaccionesFiltradas.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding: 2rem;">No se encontraron movimientos con los filtros seleccionados.</td></tr>`;
+            }
         }
 
         // --- PRESUPUESTO ---
@@ -785,6 +857,7 @@
             });
         }
 
+        // --- MANEJO DE NOTIFICACIONES ---
         function eliminarGastoFijo(id) {
             gastosFijos = gastosFijos.filter(g => g.id !== id);
             localStorage.setItem('finanzas_gastos_fijos', JSON.stringify(gastosFijos));
