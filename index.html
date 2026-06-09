@@ -3,407 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control Financiero Mensual ($)</title>
+    <title>Sistema Contable Personal</title>
     <style>
-        :root {
-            --bg-color: #f0f2f5;
-            --card-bg: #ffffff;
-            --text-main: #1a202c;
-            --text-muted: #718096;
-            --accent-blue: #2b6cb0;
-            --income-color: #38a169;
-            --expense-color: #e53e3e;
-            --tithe-color: #805ad5;
-            --border-dark: #2d3748;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            line-height: 1.5;
-            padding: 2rem 1rem;
-        }
-
-        .container { max-width: 1200px; margin: 0 auto; }
-        h1, h2, h3 { margin-bottom: 1rem; }
-
-        /* Estilos de Formularios (Minimalistas) */
-        .card {
-            background-color: var(--card-bg);
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .bcv-panel { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; align-items: center;}
-        .bcv-panel input { width: 90px; padding: 0.3rem; text-align: center; }
-
-        form { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; align-items: end; }
-        .input-group { display: flex; flex-direction: column; }
-        label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.3rem; }
-        input, select { padding: 0.5rem; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 0.95rem; }
-        button { background-color: var(--accent-blue); color: white; border: none; padding: 0.6rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        button:hover { background-color: #2c5282; }
-
-        /* VISTA ESTILO EXCEL (Basado en la imagen) */
-        .excel-dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-            align-items: start;
-        }
-
-        .excel-block {
-            border: 3px solid black;
-            background-color: white;
-            font-size: 0.9rem;
-        }
-
-        .excel-header-row {
-            display: flex;
-            background-color: #8c8c8c;
-            color: white;
-            font-weight: bold;
-            border-bottom: 2px solid black;
-        }
-
-        .excel-header-title {
-            flex: 1;
-            padding: 4px 8px;
-            border-right: 2px solid black;
-        }
-
-        .excel-header-amount {
-            width: 80px;
-            text-align: right;
-            padding: 4px 8px;
-            background-color: #a6a6a6;
-            color: black;
-            border-right: 2px solid black;
-        }
-
-        .excel-header-percent {
-            width: 50px;
-            text-align: center;
-            padding: 4px;
-            background-color: #fff200; /* Amarillo característico */
-            color: black;
-        }
-
-        .excel-item-row {
-            display: flex;
-            border-bottom: 1px solid black;
-        }
-        .excel-item-row:last-child { border-bottom: none; }
-
-        .excel-item-name {
-            flex: 1;
-            padding: 4px 8px;
-            border-right: 2px solid black;
-        }
-
-        .excel-item-amount {
-            width: 80px;
-            text-align: right;
-            padding: 4px 8px;
-            border-right: 2px solid black;
-            background-color: white;
-        }
+        :root { --bg-color: #f0f2f5; --accent-blue: #2b6cb0; }
+        body { font-family: Arial, sans-serif; background-color: var(--bg-color); padding: 1rem; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        .card { background: white; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         
-        .excel-item-empty { width: 50px; background-color: white; }
-
-        /* Cuadro Resumen Superior Central */
-        .summary-box {
-            border: 3px solid black;
-            width: fit-content;
-            margin: 0 auto 2rem auto;
-            background: white;
-        }
-        .summary-row {
-            display: flex;
-            border-bottom: 1px solid black;
-            font-weight: bold;
-        }
-        .summary-row:last-child { border-bottom: none; }
-        .summary-label { padding: 4px 8px; width: 200px; background-color: #8c8c8c; color: white; border-right: 2px solid black;}
-        .summary-value { padding: 4px 8px; width: 100px; text-align: right; border-right: 2px solid black; }
-        .summary-pct { width: 60px; text-align: center; background-color: #fff200; padding: 4px; }
+        /* Estilos del Tablero Estilo Excel */
+        .excel-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+        .block { border: 2px solid black; background: white; font-size: 0.9rem; margin-bottom: 1rem; }
+        .head { background: #8c8c8c; color: white; font-weight: bold; padding: 5px; border-bottom: 2px solid black; display: flex; justify-content: space-between; }
+        .row { display: flex; border-bottom: 1px solid #ccc; padding: 4px; }
+        .row div:first-child { flex: 1; }
+        .row div:last-child { font-weight: bold; width: 80px; text-align: right; }
         
-        .diezmo-preview { font-size: 0.8rem; color: var(--tithe-color); margin-top: 0.2rem; font-weight: bold; min-height: 1rem;}
-        .currency-container { display: flex; gap: 0.2rem; }
-        .currency-container select { width: 60px; }
-        .currency-container input { flex: 1; }
+        form { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; align-items: end; }
+        input, select { padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; }
+        button { background: var(--accent-blue); color: white; border: none; padding: 0.6rem; border-radius: 4px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1 style="text-align: center;">Control Financiero ($)</h1>
+<div class="container">
+    <h1>Control Financiero</h1>
 
-        <!-- Convertidor -->
-        <div class="card bcv-panel">
-            <div><strong>Tasa Referencia:</strong></div>
-            <div><label>Dólar (Bs): </label><input type="number" id="tasa-usd-input" step="0.01" value="40.00"></div>
-            <div id="api-status" style="font-size: 0.85rem;">Conectando...</div>
+    <div class="card">
+        <h3>Configuración y Registro</h3>
+        <div style="margin-bottom: 1rem;">
+            Tasa Dólar (Bs): <input type="number" id="tasa" value="40.00" step="0.01">
         </div>
-
-        <!-- Registro de Transacciones -->
-        <div class="card">
-            <h3>Ingresar Nuevo Movimiento</h3>
-            <form id="finance-form">
-                <div class="input-group">
-                    <label>Tipo</label>
-                    <select id="tipo" required>
-                        <option value="ingreso">Ingreso</option>
-                        <option value="egreso">Egreso / Gasto</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>Categoría Principal</label>
-                    <input type="text" id="categoria" list="cat-list" placeholder="Ej. Casa, Alimentación..." required>
-                    <datalist id="cat-list">
-                        <option value="Barbería">
-                        <option value="Pedacito de Gracia">
-                        <option value="Universidad">
-                        <option value="Casa / Vivienda">
-                        <option value="Comida / Alimentación">
-                        <option value="Diezmos y Ofrendas">
-                    </datalist>
-                </div>
-                <div class="input-group">
-                    <label>Subcategoría (Fila)</label>
-                    <input type="text" id="subcategoria" placeholder="Ej. Internet, Marquesas..." required>
-                </div>
-                <div class="input-group">
-                    <label>Monto</label>
-                    <div class="currency-container">
-                        <select id="moneda"><option value="USD">$</option><option value="VES">Bs</option></select>
-                        <input type="number" id="monto" step="0.01" min="0" required>
-                    </div>
-                    <div class="diezmo-preview" id="diezmo-preview"></div>
-                </div>
-                <div class="input-group">
-                    <label>Fecha</label>
-                    <input type="month" id="mes-registro" required> <!-- Selector de Mes -->
-                </div>
-                <div class="input-group">
-                    <button type="submit">Agregar al Cuadro</button>
-                </div>
-            </form>
-        </div>
-
-        <!-- CUADRO ESTILO EXCEL -->
-        <h2 style="text-align: center; color: white; background: #2d3748; padding: 10px; border: 3px solid black; margin-bottom: 0;">
-            INGRESOS Y EGRESOS MENSUALES
-        </h2>
-        
-        <div style="background: #e2e8f0; padding: 20px; border: 3px solid black; border-top: none;">
-            
-            <!-- Resumen Central IND -->
-            <div class="summary-box" id="resumen-ind">
-                <!-- Se llena por JS -->
-            </div>
-
-            <!-- Grilla de Categorías -->
-            <div class="excel-dashboard" id="excel-grid">
-                <!-- Los bloques se generan por JS -->
-            </div>
-            
-            <div style="margin-top: 2rem; text-align: right;">
-                <button onclick="limpiarDatosMes()" style="background: #e53e3e; padding: 5px 10px; font-size: 0.8rem;">Borrar datos del mes seleccionado</button>
-            </div>
-        </div>
-
+        <form id="form-registro">
+            <select id="tipo"><option value="ingreso">Ingreso</option><option value="egreso">Egreso</option></select>
+            <input type="text" id="cat" placeholder="Categoría" required>
+            <input type="text" id="sub" placeholder="Subcategoría" required>
+            <select id="moneda"><option value="USD">$</option><option value="VES">Bs</option></select>
+            <input type="number" id="monto" placeholder="Monto" required>
+            <input type="month" id="mes" required>
+            <button type="submit">Guardar</button>
+        </form>
     </div>
 
-    <script>
-        let transacciones = JSON.parse(localStorage.getItem('finanzas_excel_data')) || [];
-        const tasaUsdInput = document.getElementById('tasa-usd-input');
-        const apiStatus = document.getElementById('api-status');
+    <div id="dashboard" class="excel-grid"></div>
+</div>
 
-        // Configurar mes actual por defecto
-        const hoy = new Date();
-        const mesActual = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
-        document.getElementById('mes-registro').value = mesActual;
+<script>
+    let data = JSON.parse(localStorage.getItem('finanzas_data')) || [];
+    const hoy = new Date();
+    document.getElementById('mes').value = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2, '0')}`;
 
-        async function obtenerTasasBCV() {
-            try {
-                const response = await fetch('https://pydolarvenezuela-api.vercel.app/api/v1/dollar?page=bcv');
-                const data = await response.json();
-                tasaUsdInput.value = data.monitors.usd.price.toFixed(2);
-                apiStatus.textContent = "Tasa BCV al día.";
-                apiStatus.style.color = "green";
-            } catch (error) {
-                apiStatus.textContent = "Modo manual (Sin conexión).";
-                apiStatus.style.color = "red";
-            }
-        }
+    document.getElementById('form-registro').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const tasa = parseFloat(document.getElementById('tasa').value);
+        const rawMonto = parseFloat(document.getElementById('monto').value);
+        const esBs = document.getElementById('moneda').value === 'VES';
+        
+        data.push({
+            tipo: document.getElementById('tipo').value,
+            cat: document.getElementById('cat').value,
+            sub: document.getElementById('sub').value,
+            monto: esBs ? rawMonto / tasa : rawMonto,
+            mes: document.getElementById('mes').value
+        });
+        localStorage.setItem('finanzas_data', JSON.stringify(data));
+        render();
+    });
 
-        document.getElementById('monto').addEventListener('input', calcularPreview);
-        document.getElementById('tipo').addEventListener('change', calcularPreview);
-        document.getElementById('mes-registro').addEventListener('change', actualizarVistaExcel);
-        tasaUsdInput.addEventListener('input', actualizarVistaExcel);
+    function render() {
+        const mesSelec = document.getElementById('mes').value;
+        const dashboard = document.getElementById('dashboard');
+        dashboard.innerHTML = '';
+        
+        const filtrado = data.filter(d => d.mes === mesSelec);
+        const grupos = {};
 
-        function calcularPreview() {
-            const tipo = document.getElementById('tipo').value;
-            const monto = parseFloat(document.getElementById('monto').value) || 0;
-            const moneda = document.getElementById('moneda').value;
-            const tasa = parseFloat(tasaUsdInput.value) || 1;
-            
-            if(tipo === 'ingreso' && monto > 0) {
-                const montoUSD = moneda === 'USD' ? monto : monto / tasa;
-                document.getElementById('diezmo-preview').textContent = `Diezmo (10%): $${(montoUSD * 0.1).toFixed(2)}`;
-            } else {
-                document.getElementById('diezmo-preview').textContent = '';
-            }
-        }
-
-        document.getElementById('finance-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const tipo = document.getElementById('tipo').value;
-            const moneda = document.getElementById('moneda').value;
-            const monto = parseFloat(document.getElementById('monto').value);
-            const tasa = parseFloat(tasaUsdInput.value) || 1;
-            const mes = document.getElementById('mes-registro').value;
-
-            const montoUSD = moneda === 'USD' ? monto : monto / tasa;
-
-            // Ajuste automático de capitalización
-            let categoria = document.getElementById('categoria').value.trim();
-            let subcategoria = document.getElementById('subcategoria').value.trim();
-
-            transacciones.push({
-                id: Date.now(),
-                mes, tipo, categoria, subcategoria, montoUSD
-            });
-
-            localStorage.setItem('finanzas_excel_data', JSON.stringify(transacciones));
-            document.getElementById('monto').value = '';
-            document.getElementById('subcategoria').value = '';
-            document.getElementById('diezmo-preview').textContent = '';
-            
-            actualizarVistaExcel();
+        filtrado.forEach(item => {
+            if(!grupos[item.cat]) grupos[item.cat] = { total: 0, items: [] };
+            grupos[item.cat].total += (item.tipo === 'ingreso' ? item.monto : -item.monto);
+            grupos[item.cat].items.push(item);
         });
 
-        function limpiarDatosMes() {
-            const mesSelec = document.getElementById('mes-registro').value;
-            if(confirm(`¿Seguro que deseas borrar TODO el registro del mes ${mesSelec}?`)) {
-                transacciones = transacciones.filter(t => t.mes !== mesSelec);
-                localStorage.setItem('finanzas_excel_data', JSON.stringify(transacciones));
-                actualizarVistaExcel();
-            }
-        }
-
-        function actualizarVistaExcel() {
-            const mesSelec = document.getElementById('mes-registro').value;
-            const dataMes = transacciones.filter(t => t.mes === mesSelec);
-
-            let totalIND = 0;
-            let totalGastos = 0;
-            const categoriasIngresos = {};
-            const categoriasEgresos = {};
-
-            // Agrupar datos
-            dataMes.forEach(t => {
-                if(t.tipo === 'ingreso') {
-                    totalIND += t.montoUSD;
-                    if(!categoriasIngresos[t.categoria]) categoriasIngresos[t.categoria] = { total: 0, subs: {} };
-                    categoriasIngresos[t.categoria].total += t.montoUSD;
-                    
-                    if(!categoriasIngresos[t.categoria].subs[t.subcategoria]) categoriasIngresos[t.categoria].subs[t.subcategoria] = 0;
-                    categoriasIngresos[t.categoria].subs[t.subcategoria] += t.montoUSD;
-                } else {
-                    totalGastos += t.montoUSD;
-                    if(!categoriasEgresos[t.categoria]) categoriasEgresos[t.categoria] = { total: 0, subs: {} };
-                    categoriasEgresos[t.categoria].total += t.montoUSD;
-                    
-                    if(!categoriasEgresos[t.categoria].subs[t.subcategoria]) categoriasEgresos[t.categoria].subs[t.subcategoria] = 0;
-                    categoriasEgresos[t.categoria].subs[t.subcategoria] += t.montoUSD;
-                }
+        for(let cat in grupos) {
+            let html = `<div class="block"><div class="head"><span>${cat}</span> <span>$${grupos[cat].total.toFixed(2)}</span></div>`;
+            grupos[cat].items.forEach(i => {
+                html += `<div class="row"><div>${i.sub}</div><div>$${i.monto.toFixed(2)}</div></div>`;
             });
-
-            const balance = totalIND - totalGastos;
-            let pctBalance = totalIND > 0 ? ((balance / totalIND) * 100).toFixed(0) : 0;
-
-            // Llenar Resumen IND
-            document.getElementById('resumen-ind').innerHTML = `
-                <div class="summary-row">
-                    <div class="summary-label">IND (Ingreso Neto Disp.)</div>
-                    <div class="summary-value">${totalIND.toFixed(0)}</div>
-                    <div class="summary-pct"></div>
-                </div>
-                <div class="summary-row">
-                    <div class="summary-label" style="background-color: #a6a6a6; color: black;">Gastos</div>
-                    <div class="summary-value">${totalGastos.toFixed(0)}</div>
-                    <div class="summary-pct"></div>
-                </div>
-                <div class="summary-row">
-                    <div class="summary-label" style="background-color: #d9d9d9; color: black;">Balance:</div>
-                    <div class="summary-value">${balance.toFixed(0)}</div>
-                    <div class="summary-pct">${pctBalance}%</div>
-                </div>
-            `;
-
-            // Generar Bloques de la Grilla
-            const grid = document.getElementById('excel-grid');
-            grid.innerHTML = '';
-
-            // 1. Crear Bloque Único de Ingresos consolidado
-            if(Object.keys(categoriasIngresos).length > 0) {
-                let htmlIngresos = `
-                    <div class="excel-block">
-                        <div class="excel-header-row">
-                            <div class="excel-header-title">Ingresos Consolidados</div>
-                            <div class="excel-header-amount">${totalIND.toFixed(0)}</div>
-                            <div class="excel-header-percent"></div>
-                        </div>`;
-                
-                for(let cat in categoriasIngresos) {
-                    for(let sub in categoriasIngresos[cat].subs) {
-                        htmlIngresos += `
-                        <div class="excel-item-row">
-                            <div class="excel-item-name">${cat} - ${sub}</div>
-                            <div class="excel-item-amount">${categoriasIngresos[cat].subs[sub].toFixed(0)}</div>
-                            <div class="excel-item-empty"></div>
-                        </div>`;
-                    }
-                }
-                htmlIngresos += `</div>`;
-                grid.innerHTML += htmlIngresos;
-            }
-
-            // 2. Crear Bloques Individuales por Categoría de Egreso
-            for(let cat in categoriasEgresos) {
-                const totalCat = categoriasEgresos[cat].total;
-                const pctCat = totalGastos > 0 ? ((totalCat / totalGastos) * 100).toFixed(0) : 0;
-                
-                let htmlBloque = `
-                    <div class="excel-block">
-                        <div class="excel-header-row">
-                            <div class="excel-header-title">${cat}</div>
-                            <div class="excel-header-amount">${totalCat.toFixed(0)}</div>
-                            <div class="excel-header-percent">${pctCat}%</div>
-                        </div>`;
-                
-                for(let sub in categoriasEgresos[cat].subs) {
-                    htmlBloque += `
-                        <div class="excel-item-row">
-                            <div class="excel-item-name">${sub}</div>
-                            <div class="excel-item-amount">${categoriasEgresos[cat].subs[sub].toFixed(0)}</div>
-                            <div class="excel-item-empty"></div>
-                        </div>`;
-                }
-                htmlBloque += `</div>`;
-                grid.innerHTML += htmlBloque;
-            }
+            html += `</div>`;
+            dashboard.innerHTML += html;
         }
+    }
 
-        obtenerTasasBCV();
-        actualizarVistaExcel();
-    </script>
+    render();
+</script>
 </body>
 </html>
