@@ -3,349 +3,401 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Víctor Styles | Barbería</title>
-    <link rel="stylesheet" href="styles.css">
-    <!-- Vinculación del archivo de configuración de la App -->
-<link rel="manifest" href="manifest.json">
-    <!-- Inicialización única de EmailJS en el HEAD -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <title>Control Financiero</title>
+    <style>
+        :root {
+            --bg-color: #f7f9fc;
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --accent-blue: #3182ce;
+            --accent-blue-hover: #2b6cb0;
+            --income-color: #48bb78;
+            --income-bg: #f0fff4;
+            --expense-color: #f56565;
+            --expense-bg: #fff5f5;
+            --tithe-color: #805ad5;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --border: 1px solid #e2e8f0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3 { color: var(--text-main); font-weight: 600; margin-bottom: 1rem; }
+
+        /* Tarjetas */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Tasas BCV */
+        .bcv-panel { display: flex; gap: 2rem; justify-content: center; align-items: center; }
+        .bcv-panel div { font-size: 1.1rem; }
+        .bcv-panel span { font-weight: 700; color: var(--accent-blue); }
+
+        /* Grid de Resumen */
+        .summary-grid, .averages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .summary-box {
+            padding: 1.2rem;
+            border-radius: 8px;
+            text-align: center;
+            border: var(--border);
+        }
+
+        .summary-box h4 { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .summary-box p { font-size: 1.5rem; font-weight: 700; }
+        
+        .box-income { background-color: var(--income-bg); }
+        .box-income p { color: var(--income-color); }
+        .box-expense { background-color: var(--expense-bg); }
+        .box-expense p { color: var(--expense-color); }
+        .box-tithe { background-color: #faf5ff; }
+        .box-tithe p { color: var(--tithe-color); }
+
+        /* Formulario */
+        form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end; }
+        .input-group { display: flex; flex-direction: column; }
+        label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+        input, select { 
+            padding: 0.6rem; 
+            border: var(--border); 
+            border-radius: 6px; 
+            font-size: 1rem; 
+            outline: none; 
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus { border-color: var(--accent-blue); }
+        
+        button {
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 0.7rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        button:hover { background-color: var(--accent-blue-hover); }
+        button:active { transform: scale(0.98); }
+
+        .tithe-preview { font-size: 0.85rem; color: var(--tithe-color); margin-top: 0.3rem; height: 1.2em; font-weight: 500;}
+
+        /* Tabla Excel-like */
+        .table-responsive { overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        th, td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: var(--border);
+        }
+        th { background-color: #f8fafc; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
+        tr:hover { background-color: #f1f5f9; }
+        
+        .row-ingreso td:first-child { border-left: 4px solid var(--income-color); }
+        .row-egreso td:first-child { border-left: 4px solid var(--expense-color); }
+
+        .btn-delete {
+            background-color: transparent;
+            color: var(--expense-color);
+            padding: 0.3rem;
+            font-size: 0.8rem;
+            border: 1px solid var(--expense-color);
+        }
+        .btn-delete:hover { background-color: var(--expense-color); color: white; }
+
+    </style>
 </head>
 <body>
-<!-- Encabezado corregido (Se remueve el acceso de administración de aquí) -->
-<header>
-    <div class="logo"> 
-        <img src="IMAGENES/LOGO.png" alt="Logo Víctor Styles">
+
+    <div class="container">
+        <h1 style="text-align: center;">Control Financiero</h1>
+
+        <div class="card bcv-panel">
+            <div>Tasas BCV:</div>
+            <div>Dólar: <span id="tasa-usd">---</span> Bs</div>
+            <div>Euro: <span id="tasa-eur">---</span> Bs</div>
+        </div>
+
+        <div class="card">
+            <h3>Registrar Movimiento</h3>
+            <form id="finance-form">
+                <div class="input-group">
+                    <label>Tipo</label>
+                    <select id="tipo" required>
+                        <option value="ingreso">Ingreso</option>
+                        <option value="egreso">Egreso</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Categoría</label>
+                    <input type="text" id="categoria" list="categorias-comunes" placeholder="Ej. Barbería, Repostería..." required>
+                    <datalist id="categorias-comunes">
+                        <option value="Barbería">
+                        <option value="Pedacito de Gracia">
+                        <option value="Universidad">
+                        <option value="Servicios Básicos">
+                        <option value="Mercado">
+                    </datalist>
+                </div>
+                <div class="input-group">
+                    <label>Subcategoría</label>
+                    <input type="text" id="subcategoria" placeholder="Ej. Corte clásico, Marquesas...">
+                </div>
+                <div class="input-group">
+                    <label>Monto (Bs)</label>
+                    <input type="number" id="monto" step="0.01" min="0" required>
+                    <div class="tithe-preview" id="diezmo-preview"></div>
+                </div>
+                <div class="input-group">
+                    <label>Fecha</label>
+                    <input type="date" id="fecha" required>
+                </div>
+                <div class="input-group">
+                    <button type="submit">Guardar</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="summary-grid">
+            <div class="summary-box box-income">
+                <h4>Ingresos Totales</h4>
+                <p id="total-ingresos">0.00 Bs</p>
+            </div>
+            <div class="summary-box box-expense">
+                <h4>Egresos Totales</h4>
+                <p id="total-egresos">0.00 Bs</p>
+            </div>
+            <div class="summary-box box-tithe">
+                <h4>Diezmo Acumulado</h4>
+                <p id="total-diezmo">0.00 Bs</p>
+            </div>
+            <div class="summary-box">
+                <h4>Balance Actual</h4>
+                <p id="balance-total">0.00 Bs</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Promedios Estimados (Bs)</h3>
+            <div class="averages-grid">
+                <div class="summary-box">
+                    <h4>Diario</h4>
+                    <div style="font-size: 0.9rem;">
+                        <span style="color: var(--income-color)">Ing: <span id="prom-diario-ing">0.00</span></span> | 
+                        <span style="color: var(--expense-color)">Egr: <span id="prom-diario-egr">0.00</span></span>
+                    </div>
+                </div>
+                <div class="summary-box">
+                    <h4>Semanal</h4>
+                    <div style="font-size: 0.9rem;">
+                        <span style="color: var(--income-color)">Ing: <span id="prom-sem-ing">0.00</span></span> | 
+                        <span style="color: var(--expense-color)">Egr: <span id="prom-sem-egr">0.00</span></span>
+                    </div>
+                </div>
+                <div class="summary-box">
+                    <h4>Mensual</h4>
+                    <div style="font-size: 0.9rem;">
+                        <span style="color: var(--income-color)">Ing: <span id="prom-men-ing">0.00</span></span> | 
+                        <span style="color: var(--expense-color)">Egr: <span id="prom-men-egr">0.00</span></span>
+                    </div>
+                </div>
+                <div class="summary-box">
+                    <h4>Anual</h4>
+                    <div style="font-size: 0.9rem;">
+                        <span style="color: var(--income-color)">Ing: <span id="prom-anu-ing">0.00</span></span> | 
+                        <span style="color: var(--expense-color)">Egr: <span id="prom-anu-egr">0.00</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card table-responsive">
+            <h3>Registro Detallado</h3>
+            <table id="finance-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Categoría / Sub</th>
+                        <th>Monto (Bs)</th>
+                        <th>Monto ($)</th>
+                        <th>Diezmo (Bs)</th>
+                        <th>%</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body"></tbody>
+            </table>
+        </div>
+
     </div>
-   <nav class="menu-navegacion">
-        <div class="menu-fila-superior">
-            <a href="#inicio" class="menu-link">INICIO</a>
-            <a href="#galeria" class="menu-link">CORTES</a>
-        </div>
-        
-        <div class="menu-fila-inferior">
-            <a href="#agenda" class="menu-link-destacado">Agendar Cita</a>
-        </div>
-    </nav>
-</header>
 
+    <script>
+        let tasaUSD = 1; 
+        let transacciones = JSON.parse(localStorage.getItem('finanzas_data')) || [];
 
+        const form = document.getElementById('finance-form');
+        const tipoInput = document.getElementById('tipo');
+        const montoInput = document.getElementById('monto');
+        const diezmoPreview = document.getElementById('diezmo-preview');
 
-    <!-- Sección de Bienvenida Principal -->
-    <section id="inicio" class="hero-container">
-        <div class="hero-media">
-            <img src="IMAGENES/Hero.jpg" alt="Fondo Víctor Styles" class="hero-img">
-            <div class="hero-overlay"></div>
-        </div>
-        
-        <div class="hero-content">
-            <h1 class="hero-title">VÍCTOR STYLES</h1>
-            <p class="hero-subtitle">Estilo, precisión y elegancia en cada corte.</p>
-            <a href="#agenda" class="hero-btn">AGENDAR CITA</a>
-        </div>
-    </section>
+        // Establecer fecha de hoy por defecto
+        document.getElementById('fecha').valueAsDate = new Date();
 
-    <!-- Sección de Galería -->
-    <section id="galeria" class="galeria-section">
-        <h2>Mi Trabajo</h2>
-        <p class="subtitulo">Una muestra de los cortes y estilos recientes.</p>
-        <div class="grid-galeria">
-            <div class="tarjeta-galeria"><img src="IMAGENES/corte1.png" alt="Corte de cabello 1"><p>Hair Fade</p></div>
-            <div class="tarjeta-galeria"><img src="IMAGENES/corte2.jpg" alt="Corte de cabello 2"><p>Fade con linea</p></div>
-            <div class="tarjeta-galeria"><img src="IMAGENES/corte3.jpg" alt="Corte de cabello 3"><p>Mid Fade</p></div>
-        </div>
-    </section>
+        async function obtenerTasasBCV() {
+            try {
+                const response = await fetch('https://pydolarvenezuela-api.vercel.app/api/v1/dollar?page=bcv');
+                const data = await response.json();
+                tasaUSD = data.monitors.usd.price;
+                document.getElementById('tasa-usd').textContent = tasaUSD.toFixed(2);
+                document.getElementById('tasa-eur').textContent = data.monitors.eur.price.toFixed(2);
+                actualizarInterfaz(); // Actualizar tabla con nueva tasa
+            } catch (error) {
+                console.error("Error BCV:", error);
+                document.getElementById('tasa-usd').textContent = "Error";
+            }
+        }
 
-    <!-- Sección de Precios -->
-    <section id="precios" class="precios-section">
-        <div class="precios-header">
-            <h2>Nuestros Servicios</h2>
-            <p class="subtitulo">Calidad, precisión y estilo a tu alcance</p>
-        </div>
+        montoInput.addEventListener('input', calcularPreviewDiezmo);
+        tipoInput.addEventListener('change', calcularPreviewDiezmo);
 
-        <div class="precios-grid">
-            <div class="precio-tarjeta">
-                <div class="servicio-info">
-                    <h3>Corte Sencillo</h3>
-                    <p>Corte clásico o moderno con acabado limpio.</p>
-                </div>
-                <div class="servicio-costo">10€</div>
-            </div>
+        function calcularPreviewDiezmo() {
+            if(tipoInput.value === 'ingreso' && montoInput.value) {
+                const diezmo = parseFloat(montoInput.value) * 0.10;
+                diezmoPreview.textContent = `Diezmo: ${diezmo.toFixed(2)} Bs`;
+            } else {
+                diezmoPreview.textContent = '';
+            }
+        }
 
-            <div class="precio-tarjeta destacado">
-                <div class="servicio-info">
-                    <h3>Corte Premium</h3>
-                    <p>Corte estilizado, lavado, peinado y producto premium.</p>
-                </div>
-                <div class="servicio-costo">13€</div>
-            </div>
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const tipo = tipoInput.value;
+            const monto = parseFloat(montoInput.value);
+            const fecha = document.getElementById('fecha').value;
 
-            <div class="precio-tarjeta">
-                <div class="servicio-info">
-                    <h3>Corte con Barba Sencillo</h3>
-                    <p>Arreglo de cabello y perfilado de barba básico.</p>
-                </div>
-                <div class="servicio-costo">16€</div>
-            </div>
+            const nuevaTransaccion = {
+                id: Date.now(),
+                tipo,
+                categoria: document.getElementById('categoria').value,
+                subcategoria: document.getElementById('subcategoria').value,
+                monto,
+                diezmo: tipo === 'ingreso' ? monto * 0.10 : 0,
+                fecha
+            };
 
-            <div class="precio-tarjeta destacado">
-                <div class="servicio-info">
-                    <h3>Corte con Barba Premium</h3>
-                    <p>Servicio completo, ritual de toalla caliente y navaja.</p>
-                </div>
-                <div class="servicio-costo">19€</div>
-            </div>
-
-            <div class="precio-tarjeta">
-                <div class="servicio-info">
-                    <h3>Barba Sola</h3>
-                    <p>Perfilado, hidratación y cuidado de tu barba.</p>
-                </div>
-                <div class="servicio-costo">6€</div>
-            </div>
-
-            <div class="precio-tarjeta">
-                <div class="servicio-info">
-                    <h3>Cero con Barba Premium</h3>
-                    <p>Rasurado al ras (cero) combinado con arreglo premium de barba.</p>
-                </div>
-                <div class="servicio-costo">13€</div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Sección de Agenda y Contacto -->
-    <section id="agenda" class="agenda-section">
-        <h2>Agenda tu Cita</h2>
-        <p class="subtitulo">Selecciona el día y la hora para tu próximo corte.</p>
-        
-        <form id="formulario-cita" class="form-agenda">
-            <div class="grupo-input">
-                <label for="nombre">Nombre Completo</label>
-                <input type="text" id="nombre" required placeholder="Ej. Juan Pérez">
-            </div>
-            
-            <div class="grupo-input">
-                <label for="telefono">Teléfono de Contacto</label>
-                <input type="tel" id="telefono" required placeholder="Ej. 04121234567">
-            </div>
-
-            <div class="grupo-input">
-                <label for="servicio">Selecciona el Servicio</label>
-                <select id="servicio" required class="select-servicio">
-                    <option value="" disabled selected>-- Elige un servicio --</option>
-                    <option value="Corte Sencillo (10€)">Corte Sencillo - 10€</option>
-                    <option value="Corte Premium (13€)">Corte Premium - 13€</option>
-                    <option value="Corte con Barba Sencillo (16€)">Corte con Barba Sencillo - 16€</option>
-                    <option value="Corte con Barba Premium (19€)">Corte con Barba Premium - 19€</option>
-                    <option value="Barba Sola (6€)">Barba Sola - 6€</option>
-                    <option value="Cero con Barba Premium (13€)">Cero con Barba Premium - 13€</option>
-                </select>
-            </div>
-            
-            <div class="grupo-input">
-                <label for="fecha">Fecha de tu Cita</label>
-                <input type="date" id="fecha" required>
-            </div>
-            
-            <div class="grupo-input">
-                <label for="hora">Hora Disponible para ese día</label>
-                <select id="hora" required disabled>
-                    <option value="" disabled selected>Primero selecciona un día</option>
-                </select>
-            </div>
-            
-            <button type="submit" class="btn-submit">Confirmar Reserva</button>
-        </form>
-        <!-- NUEVO CAMBIO: Contenedor y enlace de administración debajo del formulario -->
-        <div class="contenedor-admin-abajo">
-            <a href="admin.html" class="btn-admin-inferior">Acceso Administrador</a>
-        </div>
-    </section>
-
-    </section>
-
-    <footer>
-        <p>&copy; 2026 Víctor Styles. Todos los derechos reservados.</p>
-    </footer>
-
-<script>
-    // ==========================================
-    // CONFIGURACIÓN DE TUS PLATAFORMAS (BACKEND)
-    // ==========================================
-    const FIREBASE_URL = 'https://barberia-victor-default-rtdb.firebaseio.com/';
-    emailjs.init('qVvgWBz_cfropwyVU');
-
-    // ==========================================
-    // MATRIZ DE HORARIOS DE LA BARBERÍA
-    // ==========================================
-    const horariosBarberia = {
-        1: { inicio: "09:00", fin: "16:00" }, // Lunes
-        2: { inicio: "09:00", fin: "16:00" }, // Martes
-        3: { inicio: "09:00", fin: "14:30" }, // Miércoles
-        4: { inicio: "09:00", fin: "20:30" }, // Jueves
-        5: { inicio: "09:00", fin: "20:30" }, // Viernes
-        6: { inicio: "09:00", fin: "20:30" }, // Sábado
-        0: { inicio: "14:00", fin: "18:00" }  // Domingo
-    };
-
-    const inputFecha = document.getElementById('fecha');
-    const selectHora = document.getElementById('hora');
-
-    // Validación para que no puedan seleccionar días pasados en el calendario nativo
-    const hoy = new Date();
-    const hoyStr = hoy.toISOString().split('T')[0];
-    inputFecha.min = hoyStr;
-
-    // ==========================================
-    // CONTROLADOR: CARGAR Y FILTRAR HORAS DISPONIBLES
-    // ==========================================
-    inputFecha.addEventListener('change', function() {
-        const fechaSeleccionadaStr = this.value; 
-        const fechaSeleccionada = new Date(fechaSeleccionadaStr + 'T00:00:00');
-        const diaSemana = fechaSeleccionada.getDay(); 
-
-        selectHora.innerHTML = '<option value="" disabled selected>Cargando horas disponibles...</option>';
-        selectHora.disabled = true;
-        
-        fetch(`${FIREBASE_URL}citas.json`)
-            .then(response => response.json())
-            .then(citasEnLaNube => {
-                selectHora.innerHTML = '<option value="" disabled selected>Selecciona una hora</option>';
-                const horario = horariosBarberia[diaSemana];
-                const citasOcupadas = citasEnLaNube ? Object.values(citasEnLaNube) : [];
-
-                if (horario) {
-                    selectHora.disabled = false;
-                    
-                    let [hInicio, mInicio] = horario.inicio.split(':').map(Number);
-                    let [hFin, mFin] = horario.fin.split(':').map(Number);
-                    
-                    let tiempoActual = hInicio * 60 + mInicio;
-                    const tiempoFin = hFin * 60 + mFin;
-
-                    // AJUSTE 4: Obtener hora y minutos actuales si eligen el día de hoy
-                    const ahora = new Date();
-                    const esHoy = (fechaSeleccionadaStr === ahora.toISOString().split('T')[0]);
-                    const minutosTranscurridosHoy = ahora.getHours() * 60 + ahora.getMinutes();
-
-                    let banderaOpcionesDisponibles = false;
-
-                    while (tiempoActual <= tiempoFin) {
-                        let horas = Math.floor(tiempoActual / 60);
-                        let minutos = tiempoActual % 60;
-                        
-                        let horasStr = horas.toString().padStart(2, '0');
-                        let minutosStr = minutos.toString().padStart(2, '0');
-                        let horaFormato24 = `${horasStr}:${minutosStr}`;
-                        
-                        // AJUSTE 4: Si es hoy y el bloque de hora ya pasó, lo saltamos automáticamente
-                        if (esHoy && tiempoActual <= minutosTranscurridosHoy) {
-                            tiempoActual += 30;
-                            continue;
-                        }
-
-                        // Formateo visual de comparación de 12 horas AM/PM tal como se guarda en la base de datos
-                        let ampmComp = horas >= 12 ? 'PM' : 'AM';
-                        let horas12Comp = horas % 12 || 12;
-                        let textoHoraDeComparacion = `${horas12Comp}:${minutosStr} ${ampmComp}`;
-
-                        // Cálculo de la hora previa (30 minutos antes) en formato 12 horas AM/PM
-                        let tiempoHace30 = tiempoActual - 30;
-                        let horasHace30 = Math.floor(tiempoHace30 / 60);
-                        let minutosHace30 = tiempoHace30 % 60;
-                        let ampmHace30 = horasHace30 >= 12 ? 'PM' : 'AM';
-                        let horas12Hace30 = horasHace30 % 12 || 12;
-                        let minutosHace30Str = minutosHace30.toString().padStart(2, '0');
-                        let textoHoraHace30DeComparacion = `${horas12Hace30}:${minutosHace30Str} ${ampmHace30}`;
-
-                        // AJUSTE 1: Validación contra 'cita_fecha' y 'cita_hora' (datos reales de la nube)
-                        const estaOcupadaAhora = citasOcupadas.some(cita => 
-                            cita.cita_fecha === fechaSeleccionadaStr && cita.cita_hora === textoHoraDeComparacion
-                        );
-                        const estaOcupadaAntes = citasOcupadas.some(cita => 
-                            cita.cita_fecha === fechaSeleccionadaStr && cita.cita_hora === textoHoraHace30DeComparacion
-                        );
-
-                        if (estaOcupadaAhora || estaOcupadaAntes) {
-                            tiempoActual += 30;
-                            continue; 
-                        }
-                        
-                        let ampm = horas >= 12 ? 'PM' : 'AM';
-                        let horas12 = horas % 12 || 12;
-                        let textoHora = `${horas12}:${minutosStr} ${ampm}`;
-
-                        let nuevaOpcion = document.createElement('option');
-                        // El valor almacena la hora en formato 24h para procesar internamente y mantener consistencia
-                        nuevaOpcion.value = horaFormato24;
-                        nuevaOpcion.textContent = textoHora;
-                        selectHora.appendChild(nuevaOpcion);
-
-                        banderaOpcionesDisponibles = true;
-                        tiempoActual += 30;
-                    }
-
-                    if (!banderaOpcionesDisponibles) {
-                        selectHora.innerHTML = '<option value="" disabled selected>No quedan horas libres para hoy</option>';
-                        selectHora.disabled = true;
-                    }
-                } else {
-                    selectHora.innerHTML = '<option value="" disabled selected>Barbería cerrada este día</option>';
-                }
-            })
-            .catch(error => {
-                console.error("Error al consultar la nube:", error);
-                selectHora.innerHTML = '<option value="" disabled selected>Error de conexión</option>';
-            });
-    });
-
-    // ==========================================
-    // PROCESAMIENTO DEL FORMULARIO (ENVÍO GLOBAL)
-    // ==========================================
-    document.getElementById('formulario-cita').addEventListener('submit', function(event) {
-        event.preventDefault();
-
-        const fechaValue = inputFecha.value;
-        const horaTexto = selectHora.options[selectHora.selectedIndex].text;
-        
-        // AJUSTE 2: Objeto estructurado unificado para Firebase y EmailJS
-        const datosCita = {
-            cliente_nombre: document.getElementById('nombre').value.trim(),
-            cliente_telefono: document.getElementById('telefono').value.trim(),
-            servicio: document.getElementById('servicio').value,
-            cita_fecha: fechaValue,
-            cita_hora: horaTexto
-        };
-
-        // AJUSTE 2: Envío del bloque completo con metadatos del cliente a Firebase
-        fetch(`${FIREBASE_URL}citas.json`, {
-            method: 'POST',
-            body: JSON.stringify(datosCita)
-        })
-        .then(() => {
-            return emailjs.send('service_vsrbt7k', 'template_8j4r6p2', datosCita);
-        })
-        .then(function() {
-            alert(`¡Excelente, ${datosCita.cliente_nombre}! Tu cita a las ${horaTexto} quedó agendada y bloqueada en el sistema global.`);
-        })
-        .catch(error => {
-            console.error('Error en el flujo de automatización:', error);
-            alert('Hubo un problema al guardar tu turno en internet.');
+            transacciones.push(nuevaTransaccion);
+            guardarDatos();
+            form.reset();
+            document.getElementById('fecha').valueAsDate = new Date();
+            diezmoPreview.textContent = '';
         });
 
-        this.reset();
-        selectHora.disabled = true;
-        selectHora.innerHTML = '<option value="" disabled selected>Primero selecciona un día</option>';
-    });
-</script>
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then(reg => console.log('Service Worker registrado con éxito', reg))
-        .catch(err => console.error('Error al registrar el Service Worker', err));
-    });
-  }
-</script>
+        function eliminarTransaccion(id) {
+            transacciones = transacciones.filter(t => t.id !== id);
+            guardarDatos();
+        }
+
+        function guardarDatos() {
+            localStorage.setItem('finanzas_data', JSON.stringify(transacciones));
+            actualizarInterfaz();
+        }
+
+        function calcularDiasTranscurridos() {
+            if (transacciones.length === 0) return 1;
+            const fechas = transacciones.map(t => new Date(t.fecha));
+            const minFecha = new Date(Math.min(...fechas));
+            const maxFecha = new Date(Math.max(...fechas));
+            const diffTime = Math.abs(maxFecha - minFecha);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays > 0 ? diffDays : 1; 
+        }
+
+        function actualizarInterfaz() {
+            let tIngresos = 0, tEgresos = 0, tDiezmo = 0;
+
+            transacciones.forEach(t => {
+                if(t.tipo === 'ingreso') { tIngresos += t.monto; tDiezmo += t.diezmo; } 
+                else { tEgresos += t.monto; }
+            });
+
+            document.getElementById('total-ingresos').textContent = `${tIngresos.toFixed(2)} Bs`;
+            document.getElementById('total-egresos').textContent = `${tEgresos.toFixed(2)} Bs`;
+            document.getElementById('total-diezmo').textContent = `${tDiezmo.toFixed(2)} Bs`;
+            document.getElementById('balance-total').textContent = `${(tIngresos - tEgresos).toFixed(2)} Bs`;
+
+            // Calcular y mostrar promedios
+            const dias = calcularDiasTranscurridos();
+            const semanas = dias / 7 || 1;
+            const meses = dias / 30 || 1;
+            const anos = dias / 365 || 1;
+
+            document.getElementById('prom-diario-ing').textContent = (tIngresos / dias).toFixed(2);
+            document.getElementById('prom-diario-egr').textContent = (tEgresos / dias).toFixed(2);
+            document.getElementById('prom-sem-ing').textContent = (tIngresos / (dias/7 < 1 ? 1 : dias/7)).toFixed(2);
+            document.getElementById('prom-sem-egr').textContent = (tEgresos / (dias/7 < 1 ? 1 : dias/7)).toFixed(2);
+            document.getElementById('prom-men-ing').textContent = (tIngresos / (dias/30 < 1 ? 1 : dias/30)).toFixed(2);
+            document.getElementById('prom-men-egr').textContent = (tEgresos / (dias/30 < 1 ? 1 : dias/30)).toFixed(2);
+            document.getElementById('prom-anu-ing').textContent = (tIngresos / (dias/365 < 1 ? 1 : dias/365)).toFixed(2);
+            document.getElementById('prom-anu-egr').textContent = (tEgresos / (dias/365 < 1 ? 1 : dias/365)).toFixed(2);
+
+            // Renderizar tabla
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+
+            transacciones.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)).forEach(t => {
+                let porcentaje = 0;
+                if(t.tipo === 'ingreso' && tIngresos > 0) porcentaje = (t.monto / tIngresos) * 100;
+                if(t.tipo === 'egreso' && tEgresos > 0) porcentaje = (t.monto / tEgresos) * 100;
+
+                const tr = document.createElement('tr');
+                tr.className = t.tipo === 'ingreso' ? 'row-ingreso' : 'row-egreso';
+                tr.innerHTML = `
+                    <td>${t.fecha}</td>
+                    <td style="text-transform: capitalize;">${t.tipo}</td>
+                    <td><strong>${t.categoria}</strong><br><span style="font-size:0.8rem; color:#718096">${t.subcategoria}</span></td>
+                    <td>${t.monto.toFixed(2)} Bs</td>
+                    <td>$${tasaUSD > 1 ? (t.monto / tasaUSD).toFixed(2) : '0.00'}</td>
+                    <td>${t.tipo === 'ingreso' ? t.diezmo.toFixed(2) + ' Bs' : '-'}</td>
+                    <td>${porcentaje.toFixed(1)}%</td>
+                    <td><button class="btn-delete" onclick="eliminarTransaccion(${t.id})">Borrar</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        obtenerTasasBCV();
+        actualizarInterfaz();
+    </script>
 </body>
 </html>
