@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Víctor Styles | Barbería</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Vinculación del archivo de configuración de la App -->
+<link rel="manifest" href="manifest.json">
+    <!-- Inicialización única de EmailJS en el HEAD -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+</head>
+<body>
+<!-- Encabezado corregido (Se remueve el acceso de administración de aquí) -->
+<header>
+    <div class="logo"> 
+        <img src="IMAGENES/LOGO.png" alt="Logo Víctor Styles">
+    </div>
+   <nav class="menu-navegacion">
+        <div class="menu-fila-superior">
+            <a href="#inicio" class="menu-link">INICIO</a>
+            <a href="#galeria" class="menu-link">CORTES</a>
+        </div>
+        
+        <div class="menu-fila-inferior">
+            <a href="#agenda" class="menu-link-destacado">Agendar Cita</a>
+        </div>
+    </nav>
+</header>
+
+
+
+    <!-- Sección de Bienvenida Principal -->
+    <section id="inicio" class="hero-container">
+        <div class="hero-media">
+            <img src="IMAGENES/Hero.jpg" alt="Fondo Víctor Styles" class="hero-img">
+            <div class="hero-overlay"></div>
+        </div>
+        
+        <div class="hero-content">
+            <h1 class="hero-title">VÍCTOR STYLES</h1>
+            <p class="hero-subtitle">Estilo, precisión y elegancia en cada corte.</p>
+            <a href="#agenda" class="hero-btn">AGENDAR CITA</a>
+        </div>
+    </section>
+
+    <!-- Sección de Galería -->
+    <section id="galeria" class="galeria-section">
+        <h2>Mi Trabajo</h2>
+        <p class="subtitulo">Una muestra de los cortes y estilos recientes.</p>
+        <div class="grid-galeria">
+            <div class="tarjeta-galeria"><img src="IMAGENES/corte1.png" alt="Corte de cabello 1"><p>Hair Fade</p></div>
+            <div class="tarjeta-galeria"><img src="IMAGENES/corte2.jpg" alt="Corte de cabello 2"><p>Fade con linea</p></div>
+            <div class="tarjeta-galeria"><img src="IMAGENES/corte3.jpg" alt="Corte de cabello 3"><p>Mid Fade</p></div>
+        </div>
+    </section>
+
+    <!-- Sección de Precios -->
+    <section id="precios" class="precios-section">
+        <div class="precios-header">
+            <h2>Nuestros Servicios</h2>
+            <p class="subtitulo">Calidad, precisión y estilo a tu alcance</p>
+        </div>
+
+        <div class="precios-grid">
+            <div class="precio-tarjeta">
+                <div class="servicio-info">
+                    <h3>Corte Sencillo</h3>
+                    <p>Corte clásico o moderno con acabado limpio.</p>
+                </div>
+                <div class="servicio-costo">10€</div>
+            </div>
+
+            <div class="precio-tarjeta destacado">
+                <div class="servicio-info">
+                    <h3>Corte Premium</h3>
+                    <p>Corte estilizado, lavado, peinado y producto premium.</p>
+                </div>
+                <div class="servicio-costo">13€</div>
+            </div>
+
+            <div class="precio-tarjeta">
+                <div class="servicio-info">
+                    <h3>Corte con Barba Sencillo</h3>
+                    <p>Arreglo de cabello y perfilado de barba básico.</p>
+                </div>
+                <div class="servicio-costo">16€</div>
+            </div>
+
+            <div class="precio-tarjeta destacado">
+                <div class="servicio-info">
+                    <h3>Corte con Barba Premium</h3>
+                    <p>Servicio completo, ritual de toalla caliente y navaja.</p>
+                </div>
+                <div class="servicio-costo">19€</div>
+            </div>
+
+            <div class="precio-tarjeta">
+                <div class="servicio-info">
+                    <h3>Barba Sola</h3>
+                    <p>Perfilado, hidratación y cuidado de tu barba.</p>
+                </div>
+                <div class="servicio-costo">6€</div>
+            </div>
+
+            <div class="precio-tarjeta">
+                <div class="servicio-info">
+                    <h3>Cero con Barba Premium</h3>
+                    <p>Rasurado al ras (cero) combinado con arreglo premium de barba.</p>
+                </div>
+                <div class="servicio-costo">13€</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Agenda y Contacto -->
+    <section id="agenda" class="agenda-section">
+        <h2>Agenda tu Cita</h2>
+        <p class="subtitulo">Selecciona el día y la hora para tu próximo corte.</p>
+        
+        <form id="formulario-cita" class="form-agenda">
+            <div class="grupo-input">
+                <label for="nombre">Nombre Completo</label>
+                <input type="text" id="nombre" required placeholder="Ej. Juan Pérez">
+            </div>
+            
+            <div class="grupo-input">
+                <label for="telefono">Teléfono de Contacto</label>
+                <input type="tel" id="telefono" required placeholder="Ej. 04121234567">
+            </div>
+
+            <div class="grupo-input">
+                <label for="servicio">Selecciona el Servicio</label>
+                <select id="servicio" required class="select-servicio">
+                    <option value="" disabled selected>-- Elige un servicio --</option>
+                    <option value="Corte Sencillo (10€)">Corte Sencillo - 10€</option>
+                    <option value="Corte Premium (13€)">Corte Premium - 13€</option>
+                    <option value="Corte con Barba Sencillo (16€)">Corte con Barba Sencillo - 16€</option>
+                    <option value="Corte con Barba Premium (19€)">Corte con Barba Premium - 19€</option>
+                    <option value="Barba Sola (6€)">Barba Sola - 6€</option>
+                    <option value="Cero con Barba Premium (13€)">Cero con Barba Premium - 13€</option>
+                </select>
+            </div>
+            
+            <div class="grupo-input">
+                <label for="fecha">Fecha de tu Cita</label>
+                <input type="date" id="fecha" required>
+            </div>
+            
+            <div class="grupo-input">
+                <label for="hora">Hora Disponible para ese día</label>
+                <select id="hora" required disabled>
+                    <option value="" disabled selected>Primero selecciona un día</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn-submit">Confirmar Reserva</button>
+        </form>
+        <!-- NUEVO CAMBIO: Contenedor y enlace de administración debajo del formulario -->
+        <div class="contenedor-admin-abajo">
+            <a href="admin.html" class="btn-admin-inferior">Acceso Administrador</a>
+        </div>
+    </section>
+
+    </section>
+
+    <footer>
+        <p>&copy; 2026 Víctor Styles. Todos los derechos reservados.</p>
+    </footer>
+
+<script>
+    // ==========================================
+    // CONFIGURACIÓN DE TUS PLATAFORMAS (BACKEND)
+    // ==========================================
+    const FIREBASE_URL = 'https://barberia-victor-default-rtdb.firebaseio.com/';
+    emailjs.init('qVvgWBz_cfropwyVU');
+
+    // ==========================================
+    // MATRIZ DE HORARIOS DE LA BARBERÍA
+    // ==========================================
+    const horariosBarberia = {
+        1: { inicio: "09:00", fin: "16:00" }, // Lunes
+        2: { inicio: "09:00", fin: "16:00" }, // Martes
+        3: { inicio: "09:00", fin: "14:30" }, // Miércoles
+        4: { inicio: "09:00", fin: "20:30" }, // Jueves
+        5: { inicio: "09:00", fin: "20:30" }, // Viernes
+        6: { inicio: "09:00", fin: "20:30" }, // Sábado
+        0: { inicio: "14:00", fin: "18:00" }  // Domingo
+    };
+
+    const inputFecha = document.getElementById('fecha');
+    const selectHora = document.getElementById('hora');
+
+    // Validación para que no puedan seleccionar días pasados en el calendario nativo
+    const hoy = new Date();
+    const hoyStr = hoy.toISOString().split('T')[0];
+    inputFecha.min = hoyStr;
+
+    // ==========================================
+    // CONTROLADOR: CARGAR Y FILTRAR HORAS DISPONIBLES
+    // ==========================================
+    inputFecha.addEventListener('change', function() {
+        const fechaSeleccionadaStr = this.value; 
+        const fechaSeleccionada = new Date(fechaSeleccionadaStr + 'T00:00:00');
+        const diaSemana = fechaSeleccionada.getDay(); 
+
+        selectHora.innerHTML = '<option value="" disabled selected>Cargando horas disponibles...</option>';
+        selectHora.disabled = true;
+        
+        fetch(`${FIREBASE_URL}citas.json`)
+            .then(response => response.json())
+            .then(citasEnLaNube => {
+                selectHora.innerHTML = '<option value="" disabled selected>Selecciona una hora</option>';
+                const horario = horariosBarberia[diaSemana];
+                const citasOcupadas = citasEnLaNube ? Object.values(citasEnLaNube) : [];
+
+                if (horario) {
+                    selectHora.disabled = false;
+                    
+                    let [hInicio, mInicio] = horario.inicio.split(':').map(Number);
+                    let [hFin, mFin] = horario.fin.split(':').map(Number);
+                    
+                    let tiempoActual = hInicio * 60 + mInicio;
+                    const tiempoFin = hFin * 60 + mFin;
+
+                    // AJUSTE 4: Obtener hora y minutos actuales si eligen el día de hoy
+                    const ahora = new Date();
+                    const esHoy = (fechaSeleccionadaStr === ahora.toISOString().split('T')[0]);
+                    const minutosTranscurridosHoy = ahora.getHours() * 60 + ahora.getMinutes();
+
+                    let banderaOpcionesDisponibles = false;
+
+                    while (tiempoActual <= tiempoFin) {
+                        let horas = Math.floor(tiempoActual / 60);
+                        let minutos = tiempoActual % 60;
+                        
+                        let horasStr = horas.toString().padStart(2, '0');
+                        let minutosStr = minutos.toString().padStart(2, '0');
+                        let horaFormato24 = `${horasStr}:${minutosStr}`;
+                        
+                        // AJUSTE 4: Si es hoy y el bloque de hora ya pasó, lo saltamos automáticamente
+                        if (esHoy && tiempoActual <= minutosTranscurridosHoy) {
+                            tiempoActual += 30;
+                            continue;
+                        }
+
+                        // Formateo visual de comparación de 12 horas AM/PM tal como se guarda en la base de datos
+                        let ampmComp = horas >= 12 ? 'PM' : 'AM';
+                        let horas12Comp = horas % 12 || 12;
+                        let textoHoraDeComparacion = `${horas12Comp}:${minutosStr} ${ampmComp}`;
+
+                        // Cálculo de la hora previa (30 minutos antes) en formato 12 horas AM/PM
+                        let tiempoHace30 = tiempoActual - 30;
+                        let horasHace30 = Math.floor(tiempoHace30 / 60);
+                        let minutosHace30 = tiempoHace30 % 60;
+                        let ampmHace30 = horasHace30 >= 12 ? 'PM' : 'AM';
+                        let horas12Hace30 = horasHace30 % 12 || 12;
+                        let minutosHace30Str = minutosHace30.toString().padStart(2, '0');
+                        let textoHoraHace30DeComparacion = `${horas12Hace30}:${minutosHace30Str} ${ampmHace30}`;
+
+                        // AJUSTE 1: Validación contra 'cita_fecha' y 'cita_hora' (datos reales de la nube)
+                        const estaOcupadaAhora = citasOcupadas.some(cita => 
+                            cita.cita_fecha === fechaSeleccionadaStr && cita.cita_hora === textoHoraDeComparacion
+                        );
+                        const estaOcupadaAntes = citasOcupadas.some(cita => 
+                            cita.cita_fecha === fechaSeleccionadaStr && cita.cita_hora === textoHoraHace30DeComparacion
+                        );
+
+                        if (estaOcupadaAhora || estaOcupadaAntes) {
+                            tiempoActual += 30;
+                            continue; 
+                        }
+                        
+                        let ampm = horas >= 12 ? 'PM' : 'AM';
+                        let horas12 = horas % 12 || 12;
+                        let textoHora = `${horas12}:${minutosStr} ${ampm}`;
+
+                        let nuevaOpcion = document.createElement('option');
+                        // El valor almacena la hora en formato 24h para procesar internamente y mantener consistencia
+                        nuevaOpcion.value = horaFormato24;
+                        nuevaOpcion.textContent = textoHora;
+                        selectHora.appendChild(nuevaOpcion);
+
+                        banderaOpcionesDisponibles = true;
+                        tiempoActual += 30;
+                    }
+
+                    if (!banderaOpcionesDisponibles) {
+                        selectHora.innerHTML = '<option value="" disabled selected>No quedan horas libres para hoy</option>';
+                        selectHora.disabled = true;
+                    }
+                } else {
+                    selectHora.innerHTML = '<option value="" disabled selected>Barbería cerrada este día</option>';
+                }
+            })
+            .catch(error => {
+                console.error("Error al consultar la nube:", error);
+                selectHora.innerHTML = '<option value="" disabled selected>Error de conexión</option>';
+            });
+    });
+
+    // ==========================================
+    // PROCESAMIENTO DEL FORMULARIO (ENVÍO GLOBAL)
+    // ==========================================
+    document.getElementById('formulario-cita').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const fechaValue = inputFecha.value;
+        const horaTexto = selectHora.options[selectHora.selectedIndex].text;
+        
+        // AJUSTE 2: Objeto estructurado unificado para Firebase y EmailJS
+        const datosCita = {
+            cliente_nombre: document.getElementById('nombre').value.trim(),
+            cliente_telefono: document.getElementById('telefono').value.trim(),
+            servicio: document.getElementById('servicio').value,
+            cita_fecha: fechaValue,
+            cita_hora: horaTexto
+        };
+
+        // AJUSTE 2: Envío del bloque completo con metadatos del cliente a Firebase
+        fetch(`${FIREBASE_URL}citas.json`, {
+            method: 'POST',
+            body: JSON.stringify(datosCita)
+        })
+        .then(() => {
+            return emailjs.send('service_vsrbt7k', 'template_8j4r6p2', datosCita);
+        })
+        .then(function() {
+            alert(`¡Excelente, ${datosCita.cliente_nombre}! Tu cita a las ${horaTexto} quedó agendada y bloqueada en el sistema global.`);
+        })
+        .catch(error => {
+            console.error('Error en el flujo de automatización:', error);
+            alert('Hubo un problema al guardar tu turno en internet.');
+        });
+
+        this.reset();
+        selectHora.disabled = true;
+        selectHora.innerHTML = '<option value="" disabled selected>Primero selecciona un día</option>';
+    });
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('Service Worker registrado con éxito', reg))
+        .catch(err => console.error('Error al registrar el Service Worker', err));
+    });
+  }
+</script>
+</body>
+</html>
