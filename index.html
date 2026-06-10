@@ -162,7 +162,6 @@
     </nav>
 
     <div class="main-content">
-        <!-- SECCIÓN INICIO -->
         <div id="inicio" class="section active">
             <div class="card bcv-panel">
                 <div style="display: flex; flex-direction: column;">
@@ -235,7 +234,6 @@
             <div class="card">
                 <h3>Historial General</h3>
                 
-                <!-- PANEL DE BUSQUEDA Y FILTROS -->
                 <div class="filter-container">
                     <div class="input-group">
                         <label>Desde (Fecha)</label>
@@ -275,7 +273,6 @@
             </div>
         </div>
 
-        <!-- SECCIÓN PRESUPUESTO -->
         <div id="presupuesto" class="section">
             <div class="card">
                 <h3>Análisis de Gasto Mensual</h3>
@@ -306,7 +303,6 @@
             </div>
         </div>
 
-        <!-- SECCIÓN DIEZMO -->
         <div id="diezmo" class="section">
             <div class="card">
                 <h3>Cuadro Semanal de Diezmos</h3>
@@ -334,7 +330,6 @@
             </div>
         </div>
 
-        <!-- SECCIÓN GASTOS FIJOS -->
         <div id="gastos" class="section">
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
@@ -378,7 +373,6 @@
         </div>
     </div>
 
-    <!-- MODAL PARA EDITAR TRANSACCIÓN -->
     <div class="modal" id="edit-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -428,6 +422,25 @@
     </div>
 
     <script>
+        // --- ZONA HORARIA CARACAS ---
+        function getCaracasDateString() {
+            // Devuelve formato YYYY-MM-DD usando estrictamente la hora de Caracas
+            return new Intl.DateTimeFormat('en-CA', { 
+                timeZone: 'America/Caracas', 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit' 
+            }).format(new Date());
+        }
+
+        function getCaracasDateNum() {
+            // Devuelve únicamente el número del día (1-31) en Caracas
+            return parseInt(new Intl.DateTimeFormat('en-US', { 
+                timeZone: 'America/Caracas', 
+                day: 'numeric' 
+            }).format(new Date()));
+        }
+
         // --- BASE DE DATOS LOCAL ---
         let transacciones = JSON.parse(localStorage.getItem('finanzas_dolares_data')) || [];
         let gastosFijos = JSON.parse(localStorage.getItem('finanzas_gastos_fijos')) || [];
@@ -466,8 +479,9 @@
         const filtroFechaFin = document.getElementById('filtro-fecha-fin');
         const filtroTipo = document.getElementById('filtro-tipo');
 
-        document.getElementById('fecha').valueAsDate = new Date();
-        const mesActual = new Date().toISOString().slice(0,7);
+        // Inicializar Fechas usando la Zona Horaria de Caracas
+        document.getElementById('fecha').value = getCaracasDateString();
+        const mesActual = getCaracasDateString().slice(0,7);
         document.getElementById('mes-presupuesto').value = mesActual;
 
         // --- ESCUCHADORES DE FILTROS ---
@@ -591,7 +605,7 @@
             
             guardarDatos();
             form.reset();
-            document.getElementById('fecha').valueAsDate = new Date();
+            document.getElementById('fecha').value = getCaracasDateString();
             diezmoPreview.textContent = '';
         });
 
@@ -663,7 +677,6 @@
         function actualizarInterfaz() {
             let tIngresos = 0, tEgresos = 0, tDiezmo = 0;
 
-            // Primero calculamos totales globales de TODA la data para las tarjetas superiores
             transacciones.forEach(t => {
                 if(t.tipo === 'ingreso') {
                     tIngresos += t.montoUSD;
@@ -680,26 +693,20 @@
             document.getElementById('total-egresos').textContent = `$${tEgresos.toFixed(2)}`;
             document.getElementById('balance-total').textContent = `$${netoDisponible.toFixed(2)}`;
 
-            // Ahora aplicamos las reglas de filtros para mostrar en la tabla
             const fInicio = filtroFechaInicio.value;
             const fFin = filtroFechaFin.value;
             const fTipo = filtroTipo.value;
 
             let transaccionesFiltradas = transacciones.filter(t => {
-                // Filtro de fecha inicio
                 if (fInicio && t.fecha < fInicio) return false;
-                // Filtro de fecha fin
                 if (fFin && t.fecha > fFin) return false;
-                // Filtro de tipo
                 if (fTipo !== 'todos' && t.tipo !== fTipo) return false;
-                
                 return true;
             });
 
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
 
-            // Renderizar la tabla con la data filtrada (cronológicamente inversa)
             transaccionesFiltradas.slice().reverse().forEach(t => {
                 const simboloOrig = t.monedaOriginal === 'USD' ? '$' : 'Bs';
                 tbody.innerHTML += `
@@ -764,17 +771,25 @@
 
         // --- DIEZMO SEMANAL ---
         function obtenerInicioFinSemana() {
-            const hoy = new Date();
+            const hoyStr = getCaracasDateString();
+            const [y, m, d] = hoyStr.split('-').map(Number);
+            const hoy = new Date(y, m - 1, d); // Anclado a la fecha real en Caracas
             const diaSemana = hoy.getDay() || 7; 
+            
             const lunes = new Date(hoy);
             lunes.setDate(hoy.getDate() - diaSemana + 1);
             
             const domingo = new Date(lunes);
             domingo.setDate(lunes.getDate() + 6);
             
+            const formatStr = (fechaObj) => {
+                const pad = n => n.toString().padStart(2, '0');
+                return `${fechaObj.getFullYear()}-${pad(fechaObj.getMonth()+1)}-${pad(fechaObj.getDate())}`;
+            };
+            
             return { 
-                inicio: lunes.toISOString().split('T')[0], 
-                fin: domingo.toISOString().split('T')[0] 
+                inicio: formatStr(lunes), 
+                fin: formatStr(domingo) 
             };
         }
 
@@ -797,10 +812,13 @@
             tbody.innerHTML = '';
             
             const diasNombres = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-            let actual = new Date(inicio + "T00:00:00");
+            // Reconstruimos la fecha de inicio para iterar
+            const [y, m, d] = inicio.split('-').map(Number);
+            let actual = new Date(y, m - 1, d);
 
             for(let i=0; i<7; i++) {
-                let fechaStr = actual.toISOString().split('T')[0];
+                const pad = n => n.toString().padStart(2, '0');
+                let fechaStr = `${actual.getFullYear()}-${pad(actual.getMonth()+1)}-${pad(actual.getDate())}`;
                 let datos = ingresosPorDia[fechaStr] || { bruto: 0, diezmo: 0 };
                 let equivalenciaBs = datos.diezmo * tasaActual;
 
@@ -835,7 +853,7 @@
         function renderGastosFijos() {
             const tbody = document.getElementById('gastos-fijos-body');
             tbody.innerHTML = '';
-            const hoy = new Date().getDate();
+            const hoy = getCaracasDateNum();
 
             gastosFijos.sort((a,b) => a.dia - b.dia).forEach(g => {
                 let diff = g.dia - hoy;
@@ -879,7 +897,7 @@
 
         function revisarNotificaciones() {
             if (Notification.permission === "granted" && gastosFijos.length > 0) {
-                const hoy = new Date().getDate();
+                const hoy = getCaracasDateNum();
                 gastosFijos.forEach(g => {
                     let diff = g.dia - hoy;
                     if(diff === 0) {
