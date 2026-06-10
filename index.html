@@ -8,7 +8,7 @@
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    <link class="apple-touch-icon" href="icon-192.png">
 
     <style>
         :root {
@@ -358,27 +358,25 @@
         import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
-  apiKey: "AIzaSyDd0MJknaXe7A_WVq_CvGx7Zwy4X-7gjlE",
-  authDomain: "control-financiero-deb61.firebaseapp.com",
-  projectId: "control-financiero-deb61",
-  storageBucket: "control-financiero-deb61.firebasestorage.app",
-  messagingSenderId: "407669408981",
-  appId: "1:407669408981:web:18abb092ccc29b78134e5c"
-};
+            apiKey: "AIzaSyDd0MJknaXe7A_WVq_CvGx7Zwy4X-7gjlE",
+            authDomain: "control-financiero-deb61.firebaseapp.com",
+            projectId: "control-financiero-deb61",
+            storageBucket: "control-financiero-deb61.firebasestorage.app",
+            messagingSenderId: "407669408981",
+            appId: "1:407669408981:web:18abb092ccc29b78134e5c"
+        };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
         const provider = new GoogleAuthProvider();
 
-        // Solución iPhone definitiva: Usar redireccionamiento completo en vez de pop-up
         window.loginConGoogle = function() {
             signInWithRedirect(auth, provider).catch(err => alert("Error al redireccionar: " + err.message));
         };
 
         window.logoutUsuario = function() { signOut(auth); };
 
-        // Escucha el retorno del flujo de inicio de sesión de Google
         getRedirectResult(auth)
             .then((result) => {
                 if (result && result.user) {
@@ -427,16 +425,22 @@
             });
         }
 
+        // Cambio aplicado aquí: extracción limpia de datos planos de JavaScript
         window.subirDatosAFirebase = function() {
             const user = auth.currentUser;
             if (user) {
-                set(ref(db, 'usuarios/' + user.uid), {
-                    transacciones: window.transacciones,
-                    gastosFijos: window.gastosFijos,
-                    configuracion: window.configuracion,
-                    categorias: window.categorias,
-                    subcategorias: window.subcategorias
-                });
+                const datosLimpios = {
+                    transacciones: Array.isArray(window.transacciones) ? [...window.transacciones] : [],
+                    gastosFijos: Array.isArray(window.gastosFijos) ? [...window.gastosFijos] : [],
+                    configuracion: window.configuracion ? JSON.parse(JSON.stringify(window.configuracion)) : { diezmoActivo: true, fondos: [], usuarioNombre: "" },
+                    categorias: Array.isArray(window.categorias) ? [...window.categorias] : ['Spartanos Barber Shop', 'Pedacito de Gracia', 'Universidad Arturo Michelena', 'Comida', 'Transporte'],
+                    subcategorias: Array.isArray(window.subcategorias) ? [...window.subcategorias] : ['General', 'Gasolina', 'Luz']
+                };
+
+                set(ref(db, 'usuarios/' + user.uid), datosLimpios)
+                    .catch((error) => {
+                        alert("Error al guardar en la nube: " + error.message);
+                    });
             }
         };
     </script>
