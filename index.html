@@ -88,7 +88,7 @@
         .table-responsive { overflow-x: auto; }
         .filter-container { display: flex; flex-wrap: wrap; gap: 1rem; background: #f8fafc; padding: 1rem; border-radius: 8px; border: var(--border); margin-bottom: 1rem; align-items: flex-end; }
 
-        /* Estructura Matriz Presupuesto (Inspirado en imagen 1001234282.jpg) */
+        /* Estructura de Matriz Dinámica para el Presupuesto */
         .budget-matrix-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(48%, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
         @media (max-width: 768px) { .budget-matrix-grid { grid-template-columns: 1fr; } }
         .budget-block { border: var(--border); border-radius: var(--border-radius); background: var(--card-bg); overflow: hidden; margin-bottom: 1rem; box-shadow: var(--shadow); }
@@ -99,7 +99,7 @@
         .budget-row-label { color: var(--text-main); font-weight: 500; }
         .budget-row-val { font-weight: 700; color: var(--text-muted); }
         
-        /* Modals */
+        /* Toggles */
         .toggle-switch { display: inline-flex; align-items: center; cursor: pointer; }
         .toggle-switch input { display: none; }
         .slider { width: 40px; height: 20px; background: #ccc; border-radius: 20px; position: relative; margin-right: 10px; transition: 0.3s; }
@@ -139,7 +139,6 @@
     </nav>
 
     <div class="main-content">
-        <!-- SECCIÓN INICIO -->
         <div id="inicio" class="section active">
             <div class="card bcv-panel">
                 <div style="display: flex; flex-direction: column;">
@@ -209,18 +208,17 @@
             </div>
         </div>
 
-        <!-- SECCIÓN GASTOS -->
         <div id="gastos" class="section">
             <div class="card">
                 <h3>Registrar Egreso Rápido</h3>
                 <form id="gastos-form" class="grid-form">
                     <div class="input-group">
                         <label>Categoría</label>
-                        <input type="text" id="g-categoria" list="lista-categorias" required>
+                        <input type="text" id="g-categoria" list="lista-categorias" required autocomplete="off">
                     </div>
                     <div class="input-group">
                         <label>Subcategoría</label>
-                        <input type="text" id="g-subcategoria" list="lista-subcategorias">
+                        <input type="text" id="g-subcategoria" list="lista-subcategorias" autocomplete="off">
                     </div>
                     <div class="input-group">
                         <label>Monto ($)</label>
@@ -253,7 +251,6 @@
             </div>
         </div>
 
-        <!-- SECCIÓN GASTOS FIJOS -->
         <div id="gastos-fijos" class="section">
             <div class="card">
                 <h3>Programar Gastos Fijos</h3>
@@ -280,7 +277,6 @@
             </div>
         </div>
 
-        <!-- SECCIÓN DIEZMO -->
         <div id="diezmo" class="section">
             <div class="card">
                 <h3>Cuadro Semanal de Diezmos</h3>
@@ -303,7 +299,6 @@
             </div>
         </div>
 
-        <!-- SECCIÓN PRESUPUESTO (Estilo matriz reorganizado de la imagen 1001234282.jpg) -->
         <div id="presupuesto" class="section">
             <div class="card">
                 <h3>Análisis e Ingresos / Egresos Mensuales</h3>
@@ -314,7 +309,6 @@
                     </div>
                 </div>
 
-                <!-- Resumen de Control de Balance Superior -->
                 <div class="summary-grid">
                     <div class="summary-box box-neto">
                         <h4>IND (Ingreso Neto Disp.)</h4>
@@ -330,12 +324,10 @@
                     </div>
                 </div>
 
-                <!-- Bloques Distribuidos de la Matriz -->
                 <div class="budget-matrix-grid" id="matriz-bloques-contenedor"></div>
             </div>
         </div>
 
-        <!-- SECCIÓN AJUSTES Y PERSONALIZACIÓN -->
         <div id="ajustes" class="section">
             <div class="card">
                 <h3>Personalización del Sistema</h3>
@@ -406,23 +398,15 @@
         let gastosFijos = JSON.parse(localStorage.getItem('finanzas_fijos_v3')) || [];
         let configuracion = JSON.parse(localStorage.getItem('finanzas_config_v3')) || { diezmoActivo: true, fondos: [], usuarioNombre: "" };
         
-        // Migración de categorías y subcategorías sugeridas
-        let categorias = JSON.parse(localStorage.getItem('cat_v3')) || ['Spartanos Barber Shop', 'Pedacito de Gracia', 'Universidad Arturo Michelena', 'Autos / Transporte', 'Casa / Vivienda', 'Comida / Alimentación', 'Entretenimiento', 'Ropa / Vestido', 'Salud', 'Seguros', 'Educación', 'Obligaciones'];
-        let subcategorias = JSON.parse(localStorage.getItem('subcat_v3')) || ['Gasolina', 'Arrendamiento - Alquiler', 'Luz', 'Gas', 'Teléfono', 'Servicio de Internet', 'Agua', 'Salidas', 'Medicamentos', 'Barberia', 'Chucherias'];
+        // Carga o inicialización de las listas de autocompletado
+        let categorias = JSON.parse(localStorage.getItem('cat_v3')) || ['Spartanos Barber Shop', 'Pedacito de Gracia', 'Universidad Arturo Michelena', 'Transporte', 'Vivienda', 'Comida', 'Entretenimiento', 'Salud'];
+        let subcategorias = JSON.parse(localStorage.getItem('subcat_v3')) || ['Gasolina', 'Alquiler', 'Luz', 'Internet', 'Agua', 'Medicamentos', 'Salidas'];
 
-        // Estructura fija de agrupación basada en la plantilla de la imagen
-        const MAPA_MATRIZ_CATEGORIAS = {
-            "Autos / Transporte": ["Gasolina", "Aceite", "Mantenimiento", "Reparaciones", "Parqueaderos", "Otros"],
-            "Casa / Vivienda": ["Arrendamiento - Alquiler", "Condominio", "Luz", "Gas", "Teléfono", "Servicio de Internet", "Agua", "Mantenimiento - Pintura", "Otros"],
-            "Comida / Alimentación": ["Mercado Semanal", "Panadería", "Otros"],
-            "Entretenimiento": ["Restaurantes", "Cine", "Salidas", "Otros"],
-            "Ropa / Vestido": ["Calzado", "Ropa", "Otros"],
-            "Salud": ["Doctores", "Dentista", "Medicamentos", "Seguro Medico", "Otros"],
-            "Seguros": ["Seguro de vida", "Seguro de automoviles", "Otros"],
-            "Gastos varios": ["Telefonos Celulares", "Barberia", "Suscripciones", "Cosmeticos", "Regalos", "Chucherias", "Otros"],
-            "Educación": ["Universidad", "Cursos", "Otros"],
-            "Obligaciones / Cuentas de ahorro": ["Credix", "Ahorros", "Préstamos", "Otros"]
-        };
+        // Sincronización automática inicial por si existen categorías previas en el historial
+        transacciones.forEach(t => {
+            if(t.categoria && !categorias.includes(t.categoria)) categorias.push(t.categoria);
+            if(t.subcategoria && !subcategorias.includes(t.subcategoria)) subcategorias.push(t.subcategoria);
+        });
 
         // --- INICIALIZACIÓN DE UI ---
         document.getElementById('fecha').value = getCaracasDateString();
@@ -465,7 +449,7 @@
             document.getElementById('app-greeting').textContent = saludo;
         }
 
-        // --- MANEJO DE CATEGORÍAS Y SUBCATEGORÍAS AUTOMÁTICAS ---
+        // --- ACTUALIZACIÓN DE SUGERENCIAS DE INPUTS ---
         function registrarCategoriaYSub(cat, sub) {
             let modificado = false;
             if(cat && !categorias.includes(cat)) { categorias.push(cat); localStorage.setItem('cat_v3', JSON.stringify(categorias)); modificado = true; }
@@ -498,7 +482,7 @@
         document.getElementById('monto').addEventListener('input', previewDeducciones);
         document.getElementById('tipo').addEventListener('change', previewDeducciones);
 
-        // --- FORMULARIOS ---
+        // --- MANEJO DE PROCESOS ---
         document.getElementById('finance-form').addEventListener('submit', e => {
             e.preventDefault();
             const tipo = document.getElementById('tipo').value;
@@ -507,7 +491,7 @@
             const tasa = getTasa();
             const usd = moneda === 'USD' ? orig : orig / tasa;
             const cat = document.getElementById('categoria').value.trim();
-            const sub = document.getElementById('subcategoria').value.trim();
+            const sub = document.getElementById('subcategoria').value.trim() || "General";
             
             transacciones.push({
                 id: Date.now(), tipo, categoria: cat, subcategoria: sub, monedaOriginal: moneda, montoOriginal: orig, tasa, montoUSD: usd,
@@ -521,7 +505,7 @@
             e.preventDefault();
             const usd = parseFloat(document.getElementById('g-monto').value);
             const cat = document.getElementById('g-categoria').value.trim();
-            const sub = document.getElementById('g-subcategoria').value.trim();
+            const sub = document.getElementById('g-subcategoria').value.trim() || "General";
             transacciones.push({ id: Date.now(), tipo: 'egreso', categoria: cat, subcategoria: sub, monedaOriginal: 'USD', montoOriginal: usd, tasa: getTasa(), montoUSD: usd, deducciones: {}, fecha: document.getElementById('g-fecha').value });
             registrarCategoriaYSub(cat, sub); guardarBD(); document.getElementById('gastos-form').reset(); document.getElementById('g-fecha').value = getCaracasDateString();
         });
@@ -532,7 +516,7 @@
         }
         function eliminarT(id) { if(confirm("¿Eliminar este registro?")) { transacciones = transacciones.filter(t=>t.id!==id); guardarBD(); } }
 
-        // --- RENDERIZADOS ---
+        // --- RENDERIZADO GENERAL ---
         function renderTodo() {
             actDatalists(); actualizarSaludo(); renderInicio(); renderGastosFijos(); renderAjustes(); renderPresupuesto(); renderDiezmoSemanal(); renderTablaGastos();
         }
@@ -636,22 +620,17 @@
             document.getElementById('semana-total-diezmo').textContent = `$${tDiezmo.toFixed(2)}`;
         }
 
-        // --- PRESUPUESTO MATRIZ (REDISEÑADO) ---
+        // --- PRESUPUESTO MATRIZ TOTALMENTE DINÁMICO ---
         function renderPresupuesto() {
             const mes = document.getElementById('mes-presupuesto').value;
             let totalIngresosMes = 0;
             let totalDeduccionesMes = 0;
             let totalGastadoMes = 0;
 
-            // Filtramos movimientos del mes actual
             let movimientosMes = transacciones.filter(t => t.fecha.startsWith(mes));
 
-            // Estructura para agrupar montos reales por Categoría -> Subcategoría
+            // Estructura dinámica que se adaptará según lo que consiga en las transacciones del mes
             let desglose = {};
-            for (let c in MAPA_MATRIZ_CATEGORIAS) {
-                desglose[c] = { total: 0, subcats: {} };
-                MAPA_MATRIZ_CATEGORIAS[c].forEach(s => desglose[c].subcats[s] = 0);
-            }
 
             movimientosMes.forEach(t => {
                 if (t.tipo === 'ingreso') {
@@ -660,29 +639,20 @@
                 } else if (t.tipo === 'egreso') {
                     totalGastadoMes += t.montoUSD;
                     
-                    // Intentamos clasificar el gasto en la matriz estructurada
-                    let matchedCat = Object.keys(MAPA_MATRIZ_CATEGORIAS).find(c => c.toLowerCase() === t.categoria.toLowerCase());
-                    if (matchedCat) {
-                        desglose[matchedCat].total += t.montoUSD;
-                        let matchedSub = MAPA_MATRIZ_CATEGORIAS[matchedCat].find(s => s.toLowerCase() === (t.subcategoria || "").toLowerCase());
-                        if (matchedSub) {
-                            desglose[matchedCat].subcats[matchedSub] += t.montoUSD;
-                        } else {
-                            desglose[matchedCat].subcats["Otros"] += t.montoUSD;
-                        }
-                    } else {
-                        // Si no encaja en las fijas, lo llevamos temporalmente a Gastos Varios -> Otros
-                        desglose["Gastos varios"].total += t.montoUSD;
-                        desglose["Gastos varios"].subcats["Otros"] += t.montoUSD;
+                    let cat = t.categoria || "Otros Gastos";
+                    let sub = t.subcategoria || "General";
+
+                    if (!desglose[cat]) {
+                        desglose[cat] = { total: 0, subcats: {} };
                     }
+                    desglose[cat].total += t.montoUSD;
+                    desglose[cat].subcats[sub] = (desglose[cat].subcats[sub] || 0) + t.montoUSD;
                 }
             });
 
             let ind = totalIngresosMes - totalDeduccionesMes;
-            let balance = ind - totalGastadoMes;
             let pctUso = ind > 0 ? ((totalGastadoMes / ind) * 100).toFixed(0) : 0;
 
-            // Actualizar Tarjetas de Resumen
             document.getElementById('matriz-ind').textContent = `$${ind.toFixed(2)}`;
             document.getElementById('matriz-gastos').textContent = `$${totalGastadoMes.toFixed(2)}`;
             document.getElementById('matriz-balance').textContent = pctUso + "% Utilizado";
@@ -691,10 +661,15 @@
             if(pctUso > 100) { bBox.style.background = "#fee2e2"; bBox.style.color = "var(--expense-color)"; }
             else { bBox.style.background = "#e6f4ea"; bBox.style.color = "var(--income-color)"; }
 
-            // Generar Bloques Visuales de la Matriz
             let contenedor = document.getElementById('matriz-bloques-contenedor');
             contenedor.innerHTML = '';
 
+            if (Object.keys(desglose).length === 0) {
+                contenedor.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 2rem;">No hay egresos registrados en este mes todavía.</p>';
+                return;
+            }
+
+            // Construcción e inyección visual automática de bloques por categorías creadas
             for (let cat in desglose) {
                 let bloque = desglose[cat];
                 let pctBloque = totalGastadoMes > 0 ? ((bloque.total / totalGastadoMes) * 100).toFixed(0) : 0;
@@ -709,15 +684,12 @@
 
                 for (let sub in bloque.subcats) {
                     let montoSub = bloque.subcats[sub];
-                    // Mostramos las filas con montos o las básicas para mantener la estructura visual limpia
-                    if (montoSub > 0 || ["Gasolina", "Arrendamiento - Alquiler", "Luz", "Salidas", "Medicamentos", "Chucherias"].includes(sub)) {
-                        bloqueHTML += `
-                            <div class="budget-row">
-                                <span class="budget-row-label">${sub}</span>
-                                <span class="budget-row-val">$${montoSub.toFixed(2)}</span>
-                            </div>
-                        `;
-                    }
+                    bloqueHTML += `
+                        <div class="budget-row">
+                            <span class="budget-row-label">${sub}</span>
+                            <span class="budget-row-val">$${montoSub.toFixed(2)}</span>
+                        </div>
+                    `;
                 }
 
                 bloqueHTML += `</div>`;
@@ -745,19 +717,11 @@
             });
         }
 
-        // --- RESPALDOS (BACKUP Y RESTAURACIÓN EXACTA) ---
+        // --- RESPALDOS DE DATOS ---
         function backupGmail() {
-            // Empaquetamos exclusivamente los datos limpios de la aplicación
-            const dataALanzar = { 
-                transacciones, 
-                gastosFijos, 
-                configuracion,
-                categorias,
-                subcategorias
-            };
+            const dataALanzar = { transacciones, gastosFijos, configuracion, categorias, subcategorias };
             const jsonStr = JSON.stringify(dataALanzar, null, 2);
             
-            // 1. Descarga automática del archivo físico JSON de datos
             const blob = new Blob([jsonStr], { type: "application/json" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -767,7 +731,6 @@
             a.click();
             document.body.removeChild(a);
 
-            // 2. Redirección sugerida a Gmail para adjuntar el respaldo de forma segura
             const bodyText = `Hola,\n\nAdjunta a este correo el archivo JSON que se acaba de descargar para resguardar tu copia de seguridad.\n\nPara restaurarlo, usa el botón "Cargar Backup" de la app.\n\nFecha de respaldo: ${getCaracasDateString()}`;
             window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=tu_correo@gmail.com&su=Copia de Seguridad Finanzas&body=${encodeURIComponent(bodyText)}`, '_blank');
         }
@@ -780,8 +743,6 @@
             lector.onload = function(e) {
                 try {
                     const datosParseados = JSON.parse(e.target.result);
-                    
-                    // Validamos que contenga las estructuras requeridas básicas
                     if (datosParseados.transacciones && datosParseados.gastosFijos && datosParseados.configuracion) {
                         transacciones = datosParseados.transacciones;
                         gastosFijos = datosParseados.gastosFijos;
@@ -789,7 +750,6 @@
                         if(datosParseados.categorias) categorias = datosParseados.categorias;
                         if(datosParseados.subcategorias) subcategorias = datosParseados.subcategorias;
 
-                        // Guardamos de inmediato en el LocalStorage
                         localStorage.setItem('finanzas_data_v3', JSON.stringify(transacciones));
                         localStorage.setItem('finanzas_fijos_v3', JSON.stringify(gastosFijos));
                         localStorage.setItem('finanzas_config_v3', JSON.stringify(configuracion));
@@ -797,7 +757,7 @@
                         localStorage.setItem('subcat_v3', JSON.stringify(subcategorias));
 
                         alert("¡Información cargada y restaurada con éxito! ✓");
-                        location.reload(); // Recarga la visualización con los datos cargados
+                        location.reload();
                     } else {
                         alert("El archivo no posee el formato de respaldo correcto.");
                     }
@@ -808,7 +768,7 @@
             lector.readAsText(archivo);
         }
 
-        // --- INICIALIZAR ---
+        // Inicialización
         obtenerTasasBCV();
         renderTodo();
     </script>
