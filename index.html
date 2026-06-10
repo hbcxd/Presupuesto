@@ -351,10 +351,10 @@
         </div>
     </div>
 
-    <!-- CONTROL CENTRALIZADO DE FIREBASE (GOOGLE AUTH - COMPATIBLE CON APP/PWA) -->
+    <!-- CONTROL CENTRALIZADO DE FIREBASE (GOOGLE AUTH - CONFIGURACIÓN MÓVIL FORZADA) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut, initializeAuth, indexedDBLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
@@ -368,7 +368,12 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+        
+        // Forzar el almacenamiento de la sesión de manera local y persistente para Chrome móvil/PWA
+        const auth = initializeAuth(app, {
+            persistence: indexedDBLocalPersistence
+        });
+        
         const db = getDatabase(app);
         const provider = new GoogleAuthProvider();
 
@@ -662,7 +667,7 @@
                 let diff = Math.ceil((fPago - hoy) / (1000 * 60 * 60 * 24));
                 let est = diff === 0 ? '<span style="color:red;font-weight:bold">Hoy</span>' : (diff < 0 ? '<span style="color:gray">Vencido</span>' : `En ${diff} d`);
                 tb.innerHTML += `<tr><td>${g.nombre}</td><td>$${g.monto.toFixed(2)}</td><td style="text-transform:capitalize">${g.frecuencia}</td><td>${g.proxima}</td><td>${est}</td>
-                <td><div class="action-btns"><button class="btn-sm btn-pay" onclick="pagarGF(${g.id})">✔</button><button class="btn-sm btn-delete" onclick="elimGF(${g.id})">X</button></div></td></tr>`;
+                <td><div class="action-btns"><button class="btn-sm btn-pay" onclick="pagarGF(${g.id})">✔</button><button class="btn-sm btn-delete" onclick="elim elimGF(${g.id})">X</button></div></td></tr>`;
             });
         }
 
