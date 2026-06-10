@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control Financiero Personalizado</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
     <style>
         :root {
             --bg-color: #f4f7f6;
@@ -122,7 +128,7 @@
             <h2 style="margin: 0;" id="app-greeting">Panel Financiero</h2>
         </div>
         <div style="display: flex; gap: 0.5rem;">
-            <button class="btn-backup btn-sm" onclick="backupGmail()">Guardar Backup</button>
+            <button class="btn-backup btn-sm" onclick="descargarBackupLocal()">Guardar Backup</button>
             <button class="btn-outline btn-sm" onclick="document.getElementById('import-file-input').click()">Cargar Backup</button>
             <input type="file" id="import-file-input" accept=".json" style="display: none;" onchange="importarBackup(event)">
         </div>
@@ -334,14 +340,14 @@
                 <div class="grid-form" style="margin-bottom: 1.5rem;">
                     <div class="input-group">
                         <label>Tu Nombre / Nombre del Panel</label>
-                        <input type="text" id="config-nombre-usuario" placeholder="Ej. Familia Pérez o Spartanos" oninput="guardarPersonalizacion()">
+                        <input type="text" id="config-nombre-usuario" placeholder="Ej. Familia Pérez" oninput="guardarPersonalizacion()">
                     </div>
                 </div>
             </div>
 
             <div class="card">
                 <h3>Configuración de Deducciones Automáticas</h3>
-                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">Define qué porcentaje de tus ingresos quieres separar automáticamente. Al registrar un ingreso, se apartará este dinero del neto disponible.</p>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">Define qué porcentaje de tus ingresos quieres separar automáticamente.</p>
                 
                 <div style="margin-bottom: 2rem;">
                     <label class="toggle-switch">
@@ -351,7 +357,7 @@
                     </label>
                 </div>
 
-                <h4>Crear Nuevo Fondo (Ej. Seguro Médico, Ahorro)</h4>
+                <h4>Crear Nuevo Fondo</h4>
                 <form id="fondo-form" class="grid-form" style="margin-bottom: 1.5rem;">
                     <div class="input-group"><label>Nombre del Fondo</label><input type="text" id="fondo-nombre" required></div>
                     <div class="input-group"><label>Porcentaje (%)</label><input type="number" id="fondo-pct" step="0.1" min="0.1" required></div>
@@ -369,7 +375,6 @@
     </div>
 
     <script>
-        // --- ZONA HORARIA Y FECHAS ---
         function getCaracasDateString() {
             return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Caracas', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
         }
@@ -393,22 +398,18 @@
             return { inicio: format(start), fin: format(end) };
         }
 
-        // --- BASES DE DATOS LOCALES ---
         let transacciones = JSON.parse(localStorage.getItem('finanzas_data_v3')) || [];
         let gastosFijos = JSON.parse(localStorage.getItem('finanzas_fijos_v3')) || [];
         let configuracion = JSON.parse(localStorage.getItem('finanzas_config_v3')) || { diezmoActivo: true, fondos: [], usuarioNombre: "" };
         
-        // Carga o inicialización de las listas de autocompletado
         let categorias = JSON.parse(localStorage.getItem('cat_v3')) || ['Spartanos Barber Shop', 'Pedacito de Gracia', 'Universidad Arturo Michelena', 'Transporte', 'Vivienda', 'Comida', 'Entretenimiento', 'Salud'];
         let subcategorias = JSON.parse(localStorage.getItem('subcat_v3')) || ['Gasolina', 'Alquiler', 'Luz', 'Internet', 'Agua', 'Medicamentos', 'Salidas'];
 
-        // Sincronización automática inicial por si existen categorías previas en el historial
         transacciones.forEach(t => {
             if(t.categoria && !categorias.includes(t.categoria)) categorias.push(t.categoria);
             if(t.subcategoria && !subcategorias.includes(t.subcategoria)) subcategorias.push(t.subcategoria);
         });
 
-        // --- INICIALIZACIÓN DE UI ---
         document.getElementById('fecha').value = getCaracasDateString();
         document.getElementById('g-fecha').value = getCaracasDateString();
         document.getElementById('mes-presupuesto').value = getCaracasDateString().slice(0,7);
@@ -425,7 +426,6 @@
             renderTodo();
         }
 
-        // --- TASA BCV ---
         async function obtenerTasasBCV() {
             try {
                 const res = await fetch('https://pydolarvenezuela-api.vercel.app/api/v1/dollar?page=bcv');
@@ -438,7 +438,6 @@
         }
         function getTasa() { return parseFloat(document.getElementById('tasa-usd-input').value) || 1; }
 
-        // --- PERSONALIZACIÓN ---
         function guardarPersonalizacion() {
             configuracion.usuarioNombre = document.getElementById('config-nombre-usuario').value;
             localStorage.setItem('finanzas_config_v3', JSON.stringify(configuracion));
@@ -449,7 +448,6 @@
             document.getElementById('app-greeting').textContent = saludo;
         }
 
-        // --- ACTUALIZACIÓN DE SUGERENCIAS DE INPUTS ---
         function registrarCategoriaYSub(cat, sub) {
             let modificado = false;
             if(cat && !categorias.includes(cat)) { categorias.push(cat); localStorage.setItem('cat_v3', JSON.stringify(categorias)); modificado = true; }
@@ -461,7 +459,6 @@
             document.getElementById('lista-subcategorias').innerHTML = subcategorias.map(s=>`<option value="${s}">`).join('');
         }
 
-        // --- LOGICA DEDUCCIONES ---
         function calcularDeducciones(montoUSD) {
             let deduc = {};
             if(configuracion.diezmoActivo) deduc['Diezmo'] = montoUSD * 0.10;
@@ -482,7 +479,6 @@
         document.getElementById('monto').addEventListener('input', previewDeducciones);
         document.getElementById('tipo').addEventListener('change', previewDeducciones);
 
-        // --- MANEJO DE PROCESOS ---
         document.getElementById('finance-form').addEventListener('submit', e => {
             e.preventDefault();
             const tipo = document.getElementById('tipo').value;
@@ -516,7 +512,6 @@
         }
         function eliminarT(id) { if(confirm("¿Eliminar este registro?")) { transacciones = transacciones.filter(t=>t.id!==id); guardarBD(); } }
 
-        // --- RENDERIZADO GENERAL ---
         function renderTodo() {
             actDatalists(); actualizarSaludo(); renderInicio(); renderGastosFijos(); renderAjustes(); renderPresupuesto(); renderDiezmoSemanal(); renderTablaGastos();
         }
@@ -568,7 +563,6 @@
         document.getElementById('g-filtro-inicio').addEventListener('change', renderTablaGastos);
         document.getElementById('g-filtro-fin').addEventListener('change', renderTablaGastos);
 
-        // --- GASTOS FIJOS ---
         document.getElementById('gf-form').addEventListener('submit', e => {
             e.preventDefault();
             gastosFijos.push({
@@ -601,7 +595,6 @@
             });
         }
 
-        // --- DIEZMO SEMANAL ---
         function renderDiezmoSemanal() {
             const week = document.getElementById('filtro-semana').value;
             if(!week) return;
@@ -620,7 +613,6 @@
             document.getElementById('semana-total-diezmo').textContent = `$${tDiezmo.toFixed(2)}`;
         }
 
-        // --- PRESUPUESTO MATRIZ TOTALMENTE DINÁMICO ---
         function renderPresupuesto() {
             const mes = document.getElementById('mes-presupuesto').value;
             let totalIngresosMes = 0;
@@ -628,8 +620,6 @@
             let totalGastadoMes = 0;
 
             let movimientosMes = transacciones.filter(t => t.fecha.startsWith(mes));
-
-            // Estructura dinámica que se adaptará según lo que consiga en las transacciones del mes
             let desglose = {};
 
             movimientosMes.forEach(t => {
@@ -669,7 +659,6 @@
                 return;
             }
 
-            // Construcción e inyección visual automática de bloques por categorías creadas
             for (let cat in desglose) {
                 let bloque = desglose[cat];
                 let pctBloque = totalGastadoMes > 0 ? ((bloque.total / totalGastadoMes) * 100).toFixed(0) : 0;
@@ -697,7 +686,6 @@
             }
         }
 
-        // --- AJUSTES Y FONDOS EXTRA ---
         function guardarConfiguracion() { configuracion.diezmoActivo = document.getElementById('toggle-diezmo').checked; localStorage.setItem('finanzas_config_v3', JSON.stringify(configuracion)); renderTodo(); }
         
         document.getElementById('fondo-form').addEventListener('submit', e => {
@@ -717,22 +705,23 @@
             });
         }
 
-        // --- RESPALDOS DE DATOS ---
-        function backupGmail() {
+        // --- BOTÓN OPTIMIZADO: DESCARGA DIRECTA LOCAL ---
+        function descargarBackupLocal() {
             const dataALanzar = { transacciones, gastosFijos, configuracion, categorias, subcategorias };
             const jsonStr = JSON.stringify(dataALanzar, null, 2);
             
             const blob = new Blob([jsonStr], { type: "application/json" });
             const url = URL.createObjectURL(blob);
+            
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Backup_Finanzas_${getCaracasDateString()}.json`;
+            a.download = `Backup_Finanzas_${getCaracasDateString().replace(/-/g, '_')}.json`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-
-            const bodyText = `Hola,\n\nAdjunta a este correo el archivo JSON que se acaba de descargar para resguardar tu copia de seguridad.\n\nPara restaurarlo, usa el botón "Cargar Backup" de la app.\n\nFecha de respaldo: ${getCaracasDateString()}`;
-            window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=tu_correo@gmail.com&su=Copia de Seguridad Finanzas&body=${encodeURIComponent(bodyText)}`, '_blank');
+            
+            URL.revokeObjectURL(url);
+            alert("¡Copia de seguridad descargada directamente en tu almacenamiento local! ✓");
         }
 
         function importarBackup(event) {
@@ -758,17 +747,21 @@
 
                         alert("¡Información cargada y restaurada con éxito! ✓");
                         location.reload();
-                    } else {
-                        alert("El archivo no posee el formato de respaldo correcto.");
-                    }
-                } catch (err) {
-                    alert("Error leyendo el archivo de copia de seguridad.");
-                }
+                    } else { alert("El archivo no posee el formato correcto."); }
+                } catch (err) { alert("Error leyendo el archivo."); }
             };
             lector.readAsText(archivo);
         }
 
-        // Inicialización
+        // --- REGISTRO DE SERVICE WORKER PARA LA PWA ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('PWA Service Worker registrado con éxito', reg))
+                    .catch(err => console.error('Error registrando el Service Worker', err));
+            });
+        }
+
         obtenerTasasBCV();
         renderTodo();
     </script>
