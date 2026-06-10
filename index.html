@@ -131,13 +131,11 @@
 </head>
 <body>
 
-    <!-- PANTALLA DE ACCESO CON GOOGLE -->
     <div class="auth-container" id="auth-container">
         <div class="auth-card">
             <h2>Control Financiero</h2>
             <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.9rem;">Tu panel personal en tiempo real</p>
             
-            <!-- Botón de Google Estilizado -->
             <button onclick="loginConGoogle()" style="width: 100%; background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: var(--shadow);">
                 <svg width="20" height="20" viewBox="0 0 24 24">
                     <path fill="#EA4335" d="M12 5.04c1.64 0 3.12.56 4.28 1.67l3.2-3.2C17.52 1.59 14.96 1 12 1 7.35 1 3.37 3.67 1.39 7.56l3.86 3c.91-2.73 3.47-4.52 6.75-4.52z"/>
@@ -150,7 +148,6 @@
         </div>
     </div>
 
-    <!-- VISTA PRINCIPAL DEL PANEL -->
     <div id="app-content">
         <div class="topbar">
             <h3 style="margin: 0;" id="app-greeting">Cargando...</h3>
@@ -181,7 +178,6 @@
         </nav>
 
         <div class="main-content">
-            <!-- SECCIÓN INICIO -->
             <div id="inicio" class="section active">
                 <div class="card bcv-panel">
                     <div style="display: flex; flex-direction: column;">
@@ -244,7 +240,6 @@
                 </div>
             </div>
 
-            <!-- SECCIÓN GASTOS -->
             <div id="gastos" class="section">
                 <div class="card">
                     <h3>Registrar Egreso Rápido</h3>
@@ -271,7 +266,6 @@
                 </div>
             </div>
 
-            <!-- SECCIÓN GASTOS FIJOS -->
             <div id="gastos-fijos" class="section">
                 <div class="card">
                     <h3>Programar Gastos Fijos</h3>
@@ -296,7 +290,6 @@
                 </div>
             </div>
 
-            <!-- SECCIÓN DIEZMO -->
             <div id="diezmo" class="section">
                 <div class="card">
                     <h3>Cuadro Semanal de Diezmos</h3>
@@ -311,7 +304,6 @@
                 </div>
             </div>
 
-            <!-- SECCIÓN PRESUPUESTO -->
             <div id="presupuesto" class="section">
                 <div class="card">
                     <h3>Análisis Mensual</h3>
@@ -325,7 +317,6 @@
                 </div>
             </div>
 
-            <!-- SECCIÓN AJUSTES -->
             <div id="ajustes" class="section">
                 <div class="card">
                     <h3>Personalización</h3>
@@ -351,11 +342,10 @@
         </div>
     </div>
 
-    <!-- CONTROL CENTRALIZADO DE FIREBASE (GOOGLE AUTH OPTIMIZADO) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, update, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDd0MJknaXe7A_WVq_CvGx7Zwy4X-7gjlE",
@@ -372,17 +362,10 @@
         const db = getDatabase(app);
         const provider = new GoogleAuthProvider();
 
-        // Configuración para evitar problemas de selección de cuenta
         provider.setCustomParameters({ prompt: 'select_account' });
 
-        // Autenticación por Popup: Ideal para PWAs y dispositivos móviles
         window.loginConGoogle = function() {
             signInWithPopup(auth, provider)
-                .then((result) => {
-                    if (result.user) {
-                        crearUsuarioSiNoExiste(result.user);
-                    }
-                })
                 .catch((err) => {
                     alert("Error en el acceso: " + err.message);
                 });
@@ -393,10 +376,10 @@
                 window.transacciones = [];
                 window.gastosFijos = [];
                 window.configuracion = { diezmoActivo: true, fondos: [], usuarioNombre: "" };
+                renderTodo();
             }); 
         };
 
-        // Único escuchador global del ciclo de vida de la sesión
         onAuthStateChanged(auth, user => {
             if (user) {
                 document.getElementById('auth-container').style.display = 'none';
@@ -408,58 +391,107 @@
             }
         });
 
-        function crearUsuarioSiNoExiste(user) {
-            const userRef = ref(db, 'usuarios/' + user.uid);
-            get(userRef).then((snapshot) => {
-                if (!snapshot.exists()) {
-                    set(userRef, {
-                        transacciones: [],
-                        gastosFijos: [],
-                        configuracion: { diezmoActivo: true, fondos: [], usuarioNombre: user.displayName || "Nuevo Usuario" },
-                        categorias: ['Spartanos Barber Shop', 'Pedacito de Gracia', 'Universidad Arturo Michelena', 'Comida', 'Transporte'],
-                        subcategorias: ['General', 'Gasolina', 'Luz']
-                    });
-                }
-            });
-        }
-
         function conectarSincronizacionFirebase(uid) {
+            // Un solo punto de escucha en tiempo real para todo el nodo del usuario
             onValue(ref(db, 'usuarios/' + uid), snapshot => {
-                const data = snapshot.val();
-                if (data) {
-                    window.transacciones = data.transacciones || [];
-                    window.gastosFijos = data.gastosFijos || [];
-                    window.configuracion = data.configuracion || { diezmoActivo: true, fondos: [], usuarioNombre: "" };
-                    if(data.categorias) window.categorias = data.categorias;
-                    if(data.subcategorias) window.subcategorias = data.subcategorias;
+                const data = snapshot.val() || {};
+                
+                // Convertimos los objetos indexados por ID de Firebase en arrays para mantener la lógica de renderizado
+                window.transacciones = data.transacciones ? Object.values(data.transacciones) : [];
+                window.gastosFijos = data.gastosFijos ? Object.values(data.gastosFijos) : [];
+                
+                window.configuracion = data.configuracion || { diezmoActivo: true, fondos: {}, usuarioNombre: "" };
+                
+                // Si fondos viene como array vacío de una inicialización previa, lo pasamos a objeto para evitar errores
+                if (Array.isArray(window.configuracion.fondos)) {
+                    window.configuracion.fondos = {};
                 }
+
+                window.categorias = data.categorias ? Object.values(data.categorias) : ['Spartanos Barber Shop', 'Pedacito de Gracia', 'Universidad Arturo Michelena', 'Comida', 'Transporte'];
+                window.subcategorias = data.subcategorias ? Object.values(data.subcategorias) : ['General', 'Gasolina', 'Luz'];
+                
                 renderTodo();
             });
         }
 
-        window.subirDatosAFirebase = function() {
+        // Operaciones atómicas de escritura en tiempo real hacia la nube
+        window.db_guardarTransaccion = function(t) {
             const user = auth.currentUser;
             if (user) {
-                const datosLimpios = {
-                    transacciones: Array.isArray(window.transacciones) ? [...window.transacciones] : [],
-                    gastosFijos: Array.isArray(window.gastosFijos) ? [...window.gastosFijos] : [],
-                    configuracion: window.configuracion ? JSON.parse(JSON.stringify(window.configuracion)) : { diezmoActivo: true, fondos: [], usuarioNombre: "" },
-                    categorias: Array.isArray(window.categorias) ? [...window.categorias] : ['Spartanos Barber Shop', 'Pedacito de Gracia', 'Universidad Arturo Michelena', 'Comida', 'Transporte'],
-                    subcategorias: Array.isArray(window.subcategorias) ? [...window.subcategorias] : ['General', 'Gasolina', 'Luz']
-                };
+                const updates = {};
+                updates[`/usuarios/${user.uid}/transacciones/${t.id}`] = t;
+                update(ref(db), updates);
+            }
+        };
 
-                set(ref(db, 'usuarios/' + user.uid), datosLimpios)
-                    .catch((error) => {
-                        alert("Error al guardar en la nube: " + error.message);
-                    });
+        window.db_eliminarTransaccion = function(id) {
+            const user = auth.currentUser;
+            if (user) {
+                remove(ref(db, `/usuarios/${user.uid}/transacciones/${id}`));
+            }
+        };
+
+        window.db_guardarGastoFijo = function(gf) {
+            const user = auth.currentUser;
+            if (user) {
+                const updates = {};
+                updates[`/usuarios/${user.uid}/gastosFijos/${gf.id}`] = gf;
+                update(ref(db), updates);
+            }
+        };
+
+        window.db_eliminarGastoFijo = function(id) {
+            const user = auth.currentUser;
+            if (user) {
+                remove(ref(db, `/usuarios/${user.uid}/gastosFijos/${id}`));
+            }
+        };
+
+        window.db_actualizarConfiguracion = function(config) {
+            const user = auth.currentUser;
+            if (user) {
+                update(ref(db, `/usuarios/${user.uid}/configuracion`), config);
+            }
+        };
+
+        window.db_guardarFondo = function(fondo) {
+            const user = auth.currentUser;
+            if (user) {
+                const updates = {};
+                updates[`/usuarios/${user.uid}/configuracion/fondos/${fondo.id}`] = fondo;
+                update(ref(db), updates);
+            }
+        };
+
+        window.db_eliminarFondo = function(id) {
+            const user = auth.currentUser;
+            if (user) {
+                remove(ref(db, `/usuarios/${user.uid}/configuracion/fondos/${id}`));
+            }
+        };
+
+        window.db_registrarListas = function(cat, sub) {
+            const user = auth.currentUser;
+            if (user) {
+                const updates = {};
+                if (cat && !window.categorias.includes(cat)) {
+                    const newCatId = Date.now() + "_c";
+                    updates[`/usuarios/${user.uid}/categorias/${newCatId}`] = cat;
+                }
+                if (sub && !window.subcategorias.includes(sub)) {
+                    const newSubId = Date.now() + "_s";
+                    updates[`/usuarios/${user.uid}/subcategorias/${newSubId}`] = sub;
+                }
+                if (Object.keys(updates).length > 0) {
+                    update(ref(db), updates);
+                }
             }
         };
     </script>
 
-    <!-- LÓGICA INTERNA DE LA APP -->
     <script>
         window.transacciones = []; window.gastosFijos = [];
-        window.configuracion = { diezmoActivo: true, fondos: [], usuarioNombre: "" };
+        window.configuracion = { diezmoActivo: true, fondos: {}, usuarioNombre: "" };
         window.categorias = []; window.subcategorias = [];
 
         function getCaracasDateString() {
@@ -514,16 +546,8 @@
         function getTasa() { return parseFloat(document.getElementById('tasa-usd-input').value) || 1; }
 
         window.guardarPersonalizacion = function() {
-            window.configuracion.usuarioNombre = document.getElementById('config-nombre-usuario').value;
-            subirDatosAFirebase();
+            window.db_actualizarConfiguracion({ usuarioNombre: document.getElementById('config-nombre-usuario').value });
         };
-
-        function registrarCategoriaYSub(cat, sub) {
-            let modificado = false;
-            if(cat && !window.categorias.includes(cat)) { window.categorias.push(cat); modificado = true; }
-            if(sub && !window.subcategorias.includes(sub)) { window.subcategorias.push(sub); modificado = true; }
-            if(modificado) subirDatosAFirebase();
-        }
 
         function actDatalists() {
             document.getElementById('lista-categorias').innerHTML = window.categorias.map(c=>`<option value="${c}">`).join('');
@@ -533,7 +557,9 @@
         function calcularDeducciones(montoUSD) {
             let deduc = {};
             if(window.configuracion.diezmoActivo) deduc['Diezmo'] = montoUSD * 0.10;
-            window.configuracion.fondos.forEach(f => deduc[f.nombre] = montoUSD * (f.pct / 100));
+            
+            const listaFondos = window.configuracion.fondos ? Object.values(window.configuracion.fondos) : [];
+            listaFondos.forEach(f => deduc[f.nombre] = montoUSD * (f.pct / 100));
             return deduc;
         }
 
@@ -561,13 +587,15 @@
             const cat = document.getElementById('categoria').value.trim();
             const sub = document.getElementById('subcategoria').value.trim() || "General";
             
-            window.transacciones.push({
-                id: Date.now(), tipo, categoria: cat, subcategoria: sub, monedaOriginal: moneda, montoOriginal: orig, tasa, montoUSD: usd,
+            const nuevaTransaccion = {
+                id: Date.now().toString(), tipo, categoria: cat, subcategoria: sub, monedaOriginal: moneda, montoOriginal: orig, tasa, montoUSD: usd,
                 deducciones: tipo === 'ingreso' ? calcularDeducciones(usd) : {},
                 fecha: document.getElementById('fecha').value
-            });
-            registrarCategoriaYSub(cat, sub);
-            subirDatosAFirebase();
+            };
+
+            window.db_guardarTransaccion(nuevaTransaccion);
+            window.db_registrarListas(cat, sub);
+
             document.getElementById('finance-form').reset();
             document.getElementById('fecha').value = getCaracasDateString();
             previewDeducciones();
@@ -578,19 +606,24 @@
             const usd = parseFloat(document.getElementById('g-monto').value);
             const cat = document.getElementById('g-categoria').value.trim();
             const sub = document.getElementById('g-subcategoria').value.trim() || "General";
-            window.transacciones.push({ id: Date.now(), tipo: 'egreso', categoria: cat, subcategoria: sub, monedaOriginal: 'USD', montoOriginal: usd, tasa: getTasa(), montoUSD: usd, deducciones: {}, fecha: document.getElementById('g-fecha').value });
-            registrarCategoriaYSub(cat, sub);
-            subirDatosAFirebase();
+            
+            const nuevaTransaccion = { 
+                id: Date.now().toString(), tipo: 'egreso', categoria: cat, subcategoria: sub, monedaOriginal: 'USD', montoOriginal: usd, tasa: getTasa(), montoUSD: usd, deducciones: {}, fecha: document.getElementById('g-fecha').value 
+            };
+
+            window.db_guardarTransaccion(nuevaTransaccion);
+            window.db_registrarListas(cat, sub);
+
             document.getElementById('gastos-form').reset();
             document.getElementById('g-fecha').value = getCaracasDateString();
         });
 
-        window.eliminarT = function(id) { if(confirm("¿Eliminar este registro?")) { window.transacciones = window.transacciones.filter(t=>t.id!==id); subirDatosAFirebase(); } };
+        window.eliminarT = function(id) { if(confirm("¿Eliminar este registro?")) { window.db_eliminarTransaccion(id); } };
 
         window.renderTodo = function() {
             actDatalists();
             document.getElementById('app-greeting').textContent = window.configuracion.usuarioNombre ? `Panel de ${window.configuracion.usuarioNombre}` : "Panel Financiero";
-            document.getElementById('toggle-diezmo').checked = window.configuracion.diezmoActivo;
+            document.getElementById('toggle-diezmo').checked = window.configuracion.diezmoActivo !== false;
             document.getElementById('config-nombre-usuario').value = window.configuracion.usuarioNombre || "";
             renderInicio(); renderGastosFijos(); renderAjustes(); renderPresupuesto(); renderDiezmoSemanal(); renderTablaGastos();
         };
@@ -614,8 +647,9 @@
             document.getElementById('global-summary').innerHTML = sHTML;
 
             const tb = document.getElementById('table-body'); tb.innerHTML = '';
-            window.transacciones.slice(-10).reverse().forEach(t => {
-                let dedSt = Object.entries(t.deducciones).map(([k,v])=>`${k}: $${v.toFixed(2)}`).join('<br>') || '-';
+            // Ordenamos de forma segura por ID o fecha antes de cortar los últimos 10
+            [...window.transacciones].sort((a,b) => b.id.localeCompare(a.id)).slice(0, 10).forEach(t => {
+                let dedSt = Object.entries(t.deducciones || {}).map(([k,v])=>`${k}: $${v.toFixed(2)}`).join('<br>') || '-';
                 let subLabel = t.subcategoria ? ` (${t.subcategoria})` : '';
                 tb.innerHTML += `<tr>
                     <td>${t.fecha}</td>
@@ -623,7 +657,7 @@
                     <td>${t.categoria}${subLabel}</td>
                     <td>$${t.montoUSD.toFixed(2)}</td>
                     <td style="font-size:0.75rem">${dedSt}</td>
-                    <td><button class="btn-sm btn-delete" onclick="eliminarT(${t.id})">X</button></td>
+                    <td><button class="btn-sm btn-delete" onclick="eliminarT('${t.id}')">X</button></td>
                 </tr>`;
             });
         }
@@ -635,7 +669,7 @@
             window.transacciones.filter(t => t.tipo === 'egreso' && (!ini || t.fecha >= ini) && (!fin || t.fecha <= fin)).reverse().forEach(t => {
                 let sigla = t.monedaOriginal === 'USD' ? '$' : 'Bs';
                 let subLabel = t.subcategoria ? ` (${t.subcategoria})` : '';
-                tb.innerHTML += `<tr><td>${t.fecha}</td><td>${t.categoria}${subLabel}</td><td>${t.montoOriginal.toFixed(2)} ${sigla}</td><td>$${t.montoUSD.toFixed(2)}</td><td><button class="btn-sm btn-delete" onclick="eliminarT(${t.id})">X</button></td></tr>`;
+                tb.innerHTML += `<tr><td>${t.fecha}</td><td>${t.categoria}${subLabel}</td><td>${t.montoOriginal.toFixed(2)} ${sigla}</td><td>$${t.montoUSD.toFixed(2)}</td><td><button class="btn-sm btn-delete" onclick="eliminarT('${t.id}')">X</button></td></tr>`;
             });
         }
         document.getElementById('g-filtro-inicio').addEventListener('change', renderTablaGastos);
@@ -643,33 +677,38 @@
 
         document.getElementById('gf-form').addEventListener('submit', e => {
             e.preventDefault();
-            window.gastosFijos.push({
-                id: Date.now(), nombre: document.getElementById('gf-nombre').value, monto: parseFloat(document.getElementById('gf-monto').value),
-                frecuencia: document.getElementById('gf-frecuencia').value, proxima: document.getElementById('gf-proxima').value
-            });
-            subirDatosAFirebase(); document.getElementById('gf-form').reset();
+            const nuevoGF = {
+                id: Date.now().toString(), 
+                nombre: document.getElementById('gf-nombre').value, 
+                monto: parseFloat(document.getElementById('gf-monto').value),
+                frecuencia: document.getElementById('gf-frecuencia').value, 
+                proxima: document.getElementById('gf-proxima').value
+            };
+            window.db_guardarGastoFijo(nuevoGF);
+            document.getElementById('gf-form').reset();
         });
 
         window.pagarGF = function(id) {
             let g = window.gastosFijos.find(x => x.id === id);
+            if (!g) return;
             let d = new Date(g.proxima + "T00:00:00");
             if(g.frecuencia==='mensual') d.setMonth(d.getMonth()+1);
             if(g.frecuencia==='quincenal') d.setDate(d.getDate()+15);
             if(g.frecuencia==='semanal') d.setDate(d.getDate()+7);
             g.proxima = new Intl.DateTimeFormat('en-CA').format(d);
-            subirDatosAFirebase();
+            window.db_guardarGastoFijo(g);
         };
-        window.elimGF = function(id){ window.gastosFijos=window.gastosFijos.filter(x=>x.id!==id); subirDatosAFirebase(); };
+        window.elimGF = function(id){ if(confirm("¿Eliminar este gasto fijo?")) { window.db_eliminarGastoFijo(id); } };
 
         function renderGastosFijos() {
             const tb = document.getElementById('gastos-fijos-body'); tb.innerHTML = '';
             const hoy = new Date(getCaracasDateString()+"T00:00:00");
-            window.gastosFijos.sort((a,b)=> new Date(a.proxima) - new Date(b.proxima)).forEach(g => {
+            [...window.gastosFijos].sort((a,b)=> new Date(a.proxima) - new Date(b.proxima)).forEach(g => {
                 let fPago = new Date(g.proxima+"T00:00:00");
                 let diff = Math.ceil((fPago - hoy) / (1000 * 60 * 60 * 24));
                 let est = diff === 0 ? '<span style="color:red;font-weight:bold">Hoy</span>' : (diff < 0 ? '<span style="color:gray">Vencido</span>' : `En ${diff} d`);
                 tb.innerHTML += `<tr><td>${g.nombre}</td><td>$${g.monto.toFixed(2)}</td><td style="text-transform:capitalize">${g.frecuencia}</td><td>${g.proxima}</td><td>${est}</td>
-                <td><div class="action-btns"><button class="btn-sm btn-pay" onclick="pagarGF(${g.id})">✔</button><button class="btn-sm btn-delete" onclick="elimGF(${g.id})">X</button></div></td></tr>`;
+                <td><div class="action-btns"><button class="btn-sm btn-pay" onclick="pagarGF('${g.id}')">✔</button><button class="btn-sm btn-delete" onclick="elimGF('${g.id}')">X</button></div></td></tr>`;
             });
         }
 
@@ -736,21 +775,30 @@
             }
         };
 
-        window.guardarConfiguracion = function() { window.configuracion.diezmoActivo = document.getElementById('toggle-diezmo').checked; subirDatosAFirebase(); };
+        window.guardarConfiguracion = function() { 
+            window.db_actualizarConfiguracion({ diezmoActivo: document.getElementById('toggle-diezmo').checked }); 
+        };
         
         document.getElementById('fondo-form').addEventListener('submit', e => {
             e.preventDefault();
-            window.configuracion.fondos.push({ id: Date.now(), nombre: document.getElementById('fondo-nombre').value, pct: parseFloat(document.getElementById('fondo-pct').value) });
-            subirDatosAFirebase(); document.getElementById('fondo-form').reset();
+            const nuevoFondo = { 
+                id: Date.now().toString(), 
+                nombre: document.getElementById('fondo-nombre').value, 
+                pct: parseFloat(document.getElementById('fondo-pct').value) 
+            };
+            window.db_guardarFondo(nuevoFondo);
+            document.getElementById('fondo-form').reset();
         });
 
-        window.elimFondo = function(id){ window.configuracion.fondos=window.configuracion.fondos.filter(x=>x.id!==id); subirDatosAFirebase(); };
+        window.elimFondo = function(id){ if(confirm("¿Eliminar este fondo?")) { window.db_eliminarFondo(id); } };
 
         function renderAjustes() {
             let fAcum = {}; window.transacciones.forEach(t => { if(t.tipo==='ingreso') for(let k in t.deducciones) fAcum[k] = (fAcum[k]||0) + t.deducciones[k]; });
             let tb = document.getElementById('fondos-body'); tb.innerHTML = '';
-            window.configuracion.fondos.forEach(f => {
-                tb.innerHTML += `<tr><td>${f.nombre}</td><td>${f.pct}%</td><td style="font-weight:bold; color:var(--accent-blue)">$${(fAcum[f.nombre] || 0).toFixed(2)}</td><td><button class="btn-sm btn-delete" onclick="elimFondo(${f.id})">X</button></td></tr>`;
+            
+            const listaFondos = window.configuracion.fondos ? Object.values(window.configuracion.fondos) : [];
+            listaFondos.forEach(f => {
+                tb.innerHTML += `<tr><td>${f.nombre}</td><td>${f.pct}%</td><td style="font-weight:bold; color:var(--accent-blue)">$${(fAcum[f.nombre] || 0).toFixed(2)}</td><td><button class="btn-sm btn-delete" onclick="elimFondo('${f.id}')">X</button></td></tr>`;
             });
         }
 
