@@ -34,13 +34,9 @@
 
         /* Pantalla de Acceso */
         .auth-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 1rem; background: #0f172a; }
-        .auth-card { background: white; padding: 2rem; border-radius: var(--border-radius); box-shadow: var(--shadow); width: 100%; max-width: 400px; text-align: center; }
+        .auth-card { background: white; padding: 2.5rem 2rem; border-radius: var(--border-radius); box-shadow: var(--shadow); width: 100%; max-width: 400px; text-align: center; }
         .auth-card h2 { margin-bottom: 0.5rem; color: #0f172a; }
-        .auth-card input { margin-bottom: 1rem; }
-        .auth-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
-        .auth-tab { flex: 1; padding: 0.5rem; cursor: pointer; color: var(--text-muted); font-weight: 600; text-align: center; }
-        .auth-tab.active { color: var(--accent-blue); border-bottom: 2px solid var(--accent-blue); }
-
+        
         /* Contenedor Principal */
         #app-content { display: none; width: 100%; }
 
@@ -139,23 +135,17 @@
     <div class="auth-container" id="auth-container">
         <div class="auth-card">
             <h2>Control Financiero</h2>
-            <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">Tu panel personal en tiempo real</p>
+            <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.9rem;">Tu panel personal en tiempo real</p>
             
-            <div class="auth-tabs">
-                <div class="auth-tab active" id="tab-login" onclick="switchAuthMode('login')">Ingresar</div>
-                <div class="auth-tab" id="tab-register" onclick="switchAuthMode('register')">Crear Cuenta</div>
-            </div>
-
-            <div class="input-group" style="text-align: left;">
-                <label>Correo Electrónico</label>
-                <input type="email" id="auth-email" placeholder="correo@ejemplo.com">
-            </div>
-            <div class="input-group" style="text-align: left;">
-                <label>Contraseña</label>
-                <input type="password" id="auth-password" placeholder="******">
-            </div>
-            
-            <button id="btn-auth-submit" style="width: 100%; margin-top: 0.5rem;" onclick="procesarAutenticacion()">Entrar al Panel</button>
+            <button onclick="loginConGoogle()" style="width: 100%; background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: var(--shadow);">
+                <svg width="20" height="20" viewBox="0 0 24 24">
+                    <path fill="#EA4335" d="M12 5.04c1.64 0 3.12.56 4.28 1.67l3.2-3.2C17.52 1.59 14.96 1 12 1 7.35 1 3.37 3.67 1.39 7.56l3.86 3c.91-2.73 3.47-4.52 6.75-4.52z"/>
+                    <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.27H12v4.51h6.46c-.29 1.48-1.14 2.73-2.4 3.58l3.72 2.88c2.18-2.01 3.71-4.98 3.71-8.7z"/>
+                    <path fill="#FBBC05" d="M5.25 14.56c-.24-.73-.38-1.5-.38-2.31s.14-1.58.38-2.31l-3.86-3C.53 8.56 0 10.22 0 12s.53 3.44 1.39 5.06l3.86-3z"/>
+                    <path fill="#34A353" d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.72-2.88c-1.03.69-2.35 1.11-4.24 1.11-3.28 0-5.84-1.79-6.75-4.52l-3.86 3C3.37 20.33 7.35 23 12 23z"/>
+                </svg>
+                Continuar con Gmail
+            </button>
         </div>
     </div>
 
@@ -356,11 +346,11 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         // =============================================================
-        // COLOCA TUS CREDENCIALES FIJAS AQUÍ. ESTE SERÁ TU ÚNICO SERVIDOR.
+        // REEMPLAZA ESTE BLOQUE POR TUS DATOS REALES DE FIREBASE
         // =============================================================
         const firebaseConfig = {
   apiKey: "AIzaSyDd0MJknaXe7A_WVq_CvGx7Zwy4X-7gjlE",
@@ -374,41 +364,27 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
+        const provider = new GoogleAuthProvider();
 
-        window.authMode = 'login'; // 'login' o 'register'
-
-        window.switchAuthMode = function(mode) {
-            window.authMode = mode;
-            document.getElementById('tab-login').classList.toggle('active', mode === 'login');
-            document.getElementById('tab-register').classList.toggle('active', mode === 'register');
-            document.getElementById('btn-auth-submit').textContent = mode === 'login' ? 'Entrar al Panel' : 'Registrar Cuenta Nueva';
-        };
-
-        window.procesarAutenticacion = function() {
-            const email = document.getElementById('auth-email').value.trim();
-            const pass = document.getElementById('auth-password').value.trim();
-
-            if(!email || !pass) { alert("Completa los datos de acceso."); return; }
-
-            if (window.authMode === 'login') {
-                signInWithEmailAndPassword(auth, email, pass)
-                    .catch(err => alert("Error al entrar: " + err.message));
-            } else {
-                createUserWithEmailAndPassword(auth, email, pass)
-                    .then((userCredential) => {
-                        // Al registrarse, se le crea una base limpia inmediatamente
-                        const uid = userCredential.user.uid;
-                        set(ref(db, 'usuarios/' + uid), {
-                            transacciones: [],
-                            gastosFijos: [],
-                            configuracion: { diezmoActivo: true, fondos: [], usuarioNombre: "Nuevo Usuario" },
-                            categorias: ['Spartanos Barber Shop', 'Pedacito de Gracia', 'Universidad Arturo Michelena', 'Comida', 'Transporte'],
-                            subcategorias: ['General', 'Gasolina', 'Luz']
-                        });
-                        alert("¡Cuenta creada con éxito! Bienvenido.");
-                    })
-                    .catch(err => alert("Error al registrar: " + err.message));
-            }
+        window.loginConGoogle = function() {
+            signInWithPopup(auth, provider)
+                .then((result) => {
+                    const uid = result.user.uid;
+                    const userRef = ref(db, 'usuarios/' + uid);
+                    
+                    get(userRef).then((snapshot) => {
+                        if (!snapshot.exists()) {
+                            set(userRef, {
+                                transacciones: [],
+                                gastosFijos: [],
+                                configuracion: { diezmoActivo: true, fondos: [], usuarioNombre: result.user.displayName || "Nuevo Usuario" },
+                                categorias: ['Spartanos Barber Shop', 'Pedacito de Gracia', 'Universidad Arturo Michelena', 'Comida', 'Transporte'],
+                                subcategorias: ['General', 'Gasolina', 'Luz']
+                            });
+                        }
+                    });
+                })
+                .catch(err => alert("Error al conectar con Google: " + err.message));
         };
 
         window.logoutUsuario = function() { signOut(auth); };
@@ -453,7 +429,6 @@
     </script>
 
     <script>
-        // Variables globales reactivas
         window.transacciones = []; window.gastosFijos = [];
         window.configuracion = { diezmoActivo: true, fondos: [], usuarioNombre: "" };
         window.categorias = []; window.subcategorias = [];
@@ -665,7 +640,7 @@
                 let diff = Math.ceil((fPago - hoy) / (1000 * 60 * 60 * 24));
                 let est = diff === 0 ? '<span style="color:red;font-weight:bold">Hoy</span>' : (diff < 0 ? '<span style="color:gray">Vencido</span>' : `En ${diff} d`);
                 tb.innerHTML += `<tr><td>${g.nombre}</td><td>$${g.monto.toFixed(2)}</td><td style="text-transform:capitalize">${g.frecuencia}</td><td>${g.proxima}</td><td>${est}</td>
-                <td><div class="action-btns"><button class="btn-sm btn-pay" onclick="pagarGF(${g.id})">✔</button><button class="btn-sm btn-delete" onclick="elimGF(${g.id})">X</button></div></td></tr>`;
+                <td><div class="action-btns"><button class="btn-sm btn-pay" onclick="pagarGF(${g.id})">✔</button><button class="btn-sm btn-delete" onclick="elim elimGF(${g.id})">X</button></div></td></tr>`;
             });
         }
 
