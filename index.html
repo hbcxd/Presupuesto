@@ -351,10 +351,10 @@
         </div>
     </div>
 
-    <!-- CONTROL CENTRALIZADO DE FIREBASE (GOOGLE AUTH - COMPATIBLE CON APP/PWA) -->
+    <!-- CONTROL CENTRALIZADO DE FIREBASE (GOOGLE AUTH OPTIMIZADO) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
@@ -372,24 +372,31 @@
         const db = getDatabase(app);
         const provider = new GoogleAuthProvider();
 
+        // Configuración para evitar problemas de selección de cuenta
+        provider.setCustomParameters({ prompt: 'select_account' });
+
+        // Autenticación por Popup: Ideal para PWAs y dispositivos móviles
         window.loginConGoogle = function() {
-            signInWithRedirect(auth, provider).catch(err => alert("Error al redireccionar: " + err.message));
+            signInWithPopup(auth, provider)
+                .then((result) => {
+                    if (result.user) {
+                        crearUsuarioSiNoExiste(result.user);
+                    }
+                })
+                .catch((err) => {
+                    alert("Error en el acceso: " + err.message);
+                });
         };
 
-        window.logoutUsuario = function() { signOut(auth); };
+        window.logoutUsuario = function() { 
+            signOut(auth).then(() => {
+                window.transacciones = [];
+                window.gastosFijos = [];
+                window.configuracion = { diezmoActivo: true, fondos: [], usuarioNombre: "" };
+            }); 
+        };
 
-        getRedirectResult(auth)
-            .then((result) => {
-                if (result && result.user) {
-                    crearUsuarioSiNoExiste(result.user);
-                }
-            })
-            .catch((error) => {
-                if (error.code !== "auth/web-storage-unsupported") {
-                    alert("Error de autenticación: " + error.message);
-                }
-            });
-
+        // Único escuchador global del ciclo de vida de la sesión
         onAuthStateChanged(auth, user => {
             if (user) {
                 document.getElementById('auth-container').style.display = 'none';
