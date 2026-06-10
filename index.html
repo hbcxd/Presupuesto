@@ -83,7 +83,6 @@
         .btn-outline:hover { background: var(--accent-blue); color: white; }
         .btn-delete { background: #fee2e2; color: var(--expense-color); }
         .btn-pay { background: #d1fae5; color: #065f46; }
-        .btn-backup { background: #0284c7; color: white; }
         .btn-logout { background: #64748b; font-size: 0.8rem; padding: 0.4rem 0.8rem; }
         
         .preview-deductions { font-size: 0.85rem; margin-top: 0.5rem; font-weight: 600; color: var(--text-muted); }
@@ -132,11 +131,13 @@
 </head>
 <body>
 
+    <!-- PANTALLA DE ACCESO CON GOOGLE -->
     <div class="auth-container" id="auth-container">
         <div class="auth-card">
             <h2>Control Financiero</h2>
             <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.9rem;">Tu panel personal en tiempo real</p>
             
+            <!-- Botón de Google Estilizado -->
             <button onclick="loginConGoogle()" style="width: 100%; background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: var(--shadow);">
                 <svg width="20" height="20" viewBox="0 0 24 24">
                     <path fill="#EA4335" d="M12 5.04c1.64 0 3.12.56 4.28 1.67l3.2-3.2C17.52 1.59 14.96 1 12 1 7.35 1 3.37 3.67 1.39 7.56l3.86 3c.91-2.73 3.47-4.52 6.75-4.52z"/>
@@ -149,11 +150,11 @@
         </div>
     </div>
 
+    <!-- VISTA PRINCIPAL DEL PANEL -->
     <div id="app-content">
         <div class="topbar">
             <h3 style="margin: 0;" id="app-greeting">Cargando...</h3>
-            <div style="display: flex; gap: 0.5rem; align-items: center;">
-                <button class="btn-backup btn-sm" onclick="descargarBackupLocal()">Backup</button>
+            <div>
                 <button class="btn-logout btn-sm" onclick="logoutUsuario()">Salir</button>
             </div>
         </div>
@@ -180,6 +181,7 @@
         </nav>
 
         <div class="main-content">
+            <!-- SECCIÓN INICIO -->
             <div id="inicio" class="section active">
                 <div class="card bcv-panel">
                     <div style="display: flex; flex-direction: column;">
@@ -242,6 +244,7 @@
                 </div>
             </div>
 
+            <!-- SECCIÓN GASTOS -->
             <div id="gastos" class="section">
                 <div class="card">
                     <h3>Registrar Egreso Rápido</h3>
@@ -268,6 +271,7 @@
                 </div>
             </div>
 
+            <!-- SECCIÓN GASTOS FIJOS -->
             <div id="gastos-fijos" class="section">
                 <div class="card">
                     <h3>Programar Gastos Fijos</h3>
@@ -292,6 +296,7 @@
                 </div>
             </div>
 
+            <!-- SECCIÓN DIEZMO -->
             <div id="diezmo" class="section">
                 <div class="card">
                     <h3>Cuadro Semanal de Diezmos</h3>
@@ -306,6 +311,7 @@
                 </div>
             </div>
 
+            <!-- SECCIÓN PRESUPUESTO -->
             <div id="presupuesto" class="section">
                 <div class="card">
                     <h3>Análisis Mensual</h3>
@@ -319,6 +325,7 @@
                 </div>
             </div>
 
+            <!-- SECCIÓN AJUSTES -->
             <div id="ajustes" class="section">
                 <div class="card">
                     <h3>Personalización</h3>
@@ -344,6 +351,7 @@
         </div>
     </div>
 
+    <!-- CONTROL CENTRALIZADO DE FIREBASE (GOOGLE AUTH) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -429,6 +437,7 @@
         };
     </script>
 
+    <!-- LÓGICA INTERNA DE LA APP -->
     <script>
         window.transacciones = []; window.gastosFijos = [];
         window.configuracion = { diezmoActivo: true, fondos: [], usuarioNombre: "" };
@@ -641,7 +650,7 @@
                 let diff = Math.ceil((fPago - hoy) / (1000 * 60 * 60 * 24));
                 let est = diff === 0 ? '<span style="color:red;font-weight:bold">Hoy</span>' : (diff < 0 ? '<span style="color:gray">Vencido</span>' : `En ${diff} d`);
                 tb.innerHTML += `<tr><td>${g.nombre}</td><td>$${g.monto.toFixed(2)}</td><td style="text-transform:capitalize">${g.frecuencia}</td><td>${g.proxima}</td><td>${est}</td>
-                <td><div class="action-btns"><button class="btn-sm btn-pay" onclick="pagarGF(${g.id})">✔</button><button class="btn-sm btn-delete" onclick="elim elimGF(${g.id})">X</button></div></td></tr>`;
+                <td><div class="action-btns"><button class="btn-sm btn-pay" onclick="pagarGF(${g.id})">✔</button><button class="btn-sm btn-delete" onclick="elimGF(${g.id})">X</button></div></td></tr>`;
             });
         }
 
@@ -725,15 +734,6 @@
                 tb.innerHTML += `<tr><td>${f.nombre}</td><td>${f.pct}%</td><td style="font-weight:bold; color:var(--accent-blue)">$${(fAcum[f.nombre] || 0).toFixed(2)}</td><td><button class="btn-sm btn-delete" onclick="elimFondo(${f.id})">X</button></td></tr>`;
             });
         }
-
-        window.descargarBackupLocal = function() {
-            const dataALanzar = { transacciones: window.transacciones, gastosFijos: window.gastosFijos, configuracion: window.configuracion, categorias: window.categorias, subcategorias: window.subcategorias };
-            const blob = new Blob([JSON.stringify(dataALanzar, null, 2)], { type: "application/json" });
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-            a.download = `Backup_Finanzas_${getCaracasDateString().replace(/-/g, '_')}.json`;
-            document.body.appendChild(a); a.click(); document.body.removeChild(a);
-            alert("¡Copia de respaldo local generada con éxito! ✓");
-        };
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(err => console.error(err)); });
