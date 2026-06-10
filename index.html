@@ -250,7 +250,7 @@
                     <h3>Registrar Egreso Rápido</h3>
                     <form id="gastos-form" class="grid-form">
                         <div class="input-group"><label>Categoría</label><input type="text" id="g-categoria" list="lista-categorias" required autocomplete="off"></div>
-                        <div class="input-group"><label>Subcategoría</label><input type="text" id="g-subcategoria" list="lista-subcategorias" autocomplete="off"></div>
+                        <div class="input-group"><label>Subcategoría</label><input type="text" id="g-subcategoria" autocomplete="off"></div>
                         <div class="input-group"><label>Monto ($)</label><input type="number" id="g-monto" step="0.01" min="0" required></div>
                         <div class="input-group"><label>Fecha</label><input type="date" id="g-fecha" required></div>
                         <div class="input-group" style="justify-content: flex-end;"><button type="submit" class="btn-delete" style="color:white">Registrar Gasto</button></div>
@@ -351,32 +351,38 @@
         </div>
     </div>
 
-    <!-- CONTROL CENTRALIZADO DE FIREBASE (GOOGLE AUTH) -->
+    <!-- CONTROL CENTRALIZADO DE FIREBASE (GOOGLE AUTH - COMPATIBLE CON IPHONE) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // =============================================================
-        // REEMPLAZA ESTE BLOQUE POR TUS DATOS REALES DE FIREBASE
-        // =============================================================
         const firebaseConfig = {
-  apiKey: "AIzaSyDd0MJknaXe7A_WVq_CvGx7Zwy4X-7gjlE",
-  authDomain: "control-financiero-deb61.firebaseapp.com",
-  projectId: "control-financiero-deb61",
-  storageBucket: "control-financiero-deb61.firebasestorage.app",
-  messagingSenderId: "407669408981",
-  appId: "1:407669408981:web:18abb092ccc29b78134e5c"
-};
+            apiKey: "TU_API_KEY_REAL_AQUÍ",
+            authDomain: "TU_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://TU_PROJECT_ID-default-rtdb.firebaseio.com",
+            projectId: "TU_PROJECT_ID",
+            storageBucket: "TU_PROJECT_ID.appspot.com",
+            messagingSenderId: "TU_SENDER_ID",
+            appId: "TU_APP_ID"
+        };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
         const provider = new GoogleAuthProvider();
 
+        // Solución iPhone definitiva: Usar redireccionamiento completo en vez de pop-up
         window.loginConGoogle = function() {
-            signInWithPopup(auth, provider)
-                .then((result) => {
+            signInWithRedirect(auth, provider).catch(err => alert("Error al redireccionar: " + err.message));
+        };
+
+        window.logoutUsuario = function() { signOut(auth); };
+
+        // Escucha el retorno del flujo de inicio de sesión de Google
+        getRedirectResult(auth)
+            .then((result) => {
+                if (result && result.user) {
                     const uid = result.user.uid;
                     const userRef = ref(db, 'usuarios/' + uid);
                     
@@ -391,11 +397,11 @@
                             });
                         }
                     });
-                })
-                .catch(err => alert("Error al conectar con Google: " + err.message));
-        };
-
-        window.logoutUsuario = function() { signOut(auth); };
+                }
+            })
+            .catch((error) => {
+                alert("Error al procesar el retorno de Google: " + error.message);
+            });
 
         onAuthStateChanged(auth, user => {
             if (user) {
