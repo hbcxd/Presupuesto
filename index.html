@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control Financiero en Dólares</title>
+    <title>Control Financiero Personalizado</title>
     <style>
         :root {
             --bg-color: #f4f7f6;
@@ -70,6 +70,8 @@
         .btn-outline { background: transparent; color: var(--accent-blue); border: 1px solid var(--accent-blue); }
         .btn-outline:hover { background: var(--accent-blue); color: white; }
         .btn-success { background: var(--income-color); color: white; }
+        .btn-backup { background: #0284c7; color: white; }
+        .btn-backup:hover { background: #0369a1; }
         
         .preview-deductions { font-size: 0.85rem; margin-top: 0.5rem; font-weight: 600; color: var(--text-muted); }
 
@@ -79,20 +81,25 @@
         
         .action-btns { display: flex; gap: 0.5rem; }
         .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; border-radius: 4px; cursor: pointer; border: none; font-weight: 600; }
-        .btn-edit { background: #fef08a; color: #854d0e; }
         .btn-delete { background: #fee2e2; color: var(--expense-color); }
         .btn-pay { background: #d1fae5; color: #065f46; }
 
         .currency-container { display: grid; grid-template-columns: 80px 1fr; gap: 0.5rem; }
         .table-responsive { overflow-x: auto; }
         .filter-container { display: flex; flex-wrap: wrap; gap: 1rem; background: #f8fafc; padding: 1rem; border-radius: 8px; border: var(--border); margin-bottom: 1rem; align-items: flex-end; }
+
+        /* Estructura Matriz Presupuesto (Inspirado en imagen 1001234282.jpg) */
+        .budget-matrix-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(48%, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+        @media (max-width: 768px) { .budget-matrix-grid { grid-template-columns: 1fr; } }
+        .budget-block { border: var(--border); border-radius: var(--border-radius); background: var(--card-bg); overflow: hidden; margin-bottom: 1rem; box-shadow: var(--shadow); }
+        .budget-block-header { background: #1e293b; color: #ffffff; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 0.95rem; }
+        .budget-block-pct { background: rgba(255,255,255,0.2); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; }
+        .budget-row { display: flex; justify-content: space-between; padding: 0.7rem 1rem; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; align-items: center; }
+        .budget-row:last-child { border-bottom: none; }
+        .budget-row-label { color: var(--text-main); font-weight: 500; }
+        .budget-row-val { font-weight: 700; color: var(--text-muted); }
         
         /* Modals */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
-        .modal.active { display: flex; }
-        .modal-content { background: var(--card-bg); padding: 2rem; border-radius: var(--border-radius); width: 90%; max-width: 600px; }
-        .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
-
         .toggle-switch { display: inline-flex; align-items: center; cursor: pointer; }
         .toggle-switch input { display: none; }
         .slider { width: 40px; height: 20px; background: #ccc; border-radius: 20px; position: relative; margin-right: 10px; transition: 0.3s; }
@@ -112,9 +119,13 @@
     <div class="topbar">
         <div style="display:flex; align-items:center;">
             <button class="menu-btn" onclick="toggleMenu()">☰</button>
-            <h2 style="margin: 0;">Panel Financiero</h2>
+            <h2 style="margin: 0;" id="app-greeting">Panel Financiero</h2>
         </div>
-        <button class="btn-outline btn-sm" onclick="backupGmail()">Guardar Backup</button>
+        <div style="display: flex; gap: 0.5rem;">
+            <button class="btn-backup btn-sm" onclick="backupGmail()">Guardar Backup</button>
+            <button class="btn-outline btn-sm" onclick="document.getElementById('import-file-input').click()">Cargar Backup</button>
+            <input type="file" id="import-file-input" accept=".json" style="display: none;" onchange="importarBackup(event)">
+        </div>
     </div>
     <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
 
@@ -124,21 +135,21 @@
         <a href="#" onclick="showSection('gastos-fijos', this)">📅 Gastos Fijos</a>
         <a href="#" onclick="showSection('presupuesto', this)">📊 Presupuesto Mensual</a>
         <a href="#" onclick="showSection('diezmo', this)">⛪ Diezmo Semanal</a>
-        <a href="#" onclick="showSection('ajustes', this)">⚙️ Ajustes y Fondos</a>
+        <a href="#" onclick="showSection('ajustes', this)">⚙️ Ajustes y Personalización</a>
     </nav>
 
     <div class="main-content">
+        <!-- SECCIÓN INICIO -->
         <div id="inicio" class="section active">
             <div class="card bcv-panel">
                 <div style="display: flex; flex-direction: column;">
                     <label style="color:var(--text-main); font-weight: 600;">Tasa Dólar Actual (Bs): </label>
                     <div style="font-size: 0.75rem; color: var(--text-muted);" id="api-status">Sincronizando BCV...</div>
                 </div>
-                <input type="number" id="tasa-usd-input" step="0.01" value="40.00">
+                <input type="number" id="tasa-usd-input" step="0.01" value="40.00" oninput="renderTodo()">
             </div>
 
-            <div class="summary-grid" id="global-summary">
-                </div>
+            <div class="summary-grid" id="global-summary"></div>
 
             <div class="card">
                 <h3>Registrar Movimiento (Ingresos y Egresos Generales)</h3>
@@ -157,7 +168,8 @@
                     </div>
                     <div class="input-group">
                         <label>Subcategoría</label>
-                        <input type="text" id="subcategoria" autocomplete="off">
+                        <input type="text" id="subcategoria" list="lista-subcategorias" autocomplete="off">
+                        <datalist id="lista-subcategorias"></datalist>
                     </div>
                     <div class="input-group">
                         <label>Monto</label>
@@ -185,7 +197,7 @@
                             <tr>
                                 <th>Fecha</th>
                                 <th>Tipo</th>
-                                <th>Categoría</th>
+                                <th>Categoría (Subcat)</th>
                                 <th>Monto ($)</th>
                                 <th>Deducciones</th>
                                 <th>Acciones</th>
@@ -197,6 +209,7 @@
             </div>
         </div>
 
+        <!-- SECCIÓN GASTOS -->
         <div id="gastos" class="section">
             <div class="card">
                 <h3>Registrar Egreso Rápido</h3>
@@ -204,6 +217,10 @@
                     <div class="input-group">
                         <label>Categoría</label>
                         <input type="text" id="g-categoria" list="lista-categorias" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Subcategoría</label>
+                        <input type="text" id="g-subcategoria" list="lista-subcategorias">
                     </div>
                     <div class="input-group">
                         <label>Monto ($)</label>
@@ -228,7 +245,7 @@
                 <div class="table-responsive">
                     <table>
                         <thead>
-                            <tr><th>Fecha</th><th>Categoría</th><th>Monto Original</th><th>Monto ($)</th><th>Acciones</th></tr>
+                            <tr><th>Fecha</th><th>Categoría (Subcat)</th><th>Monto Original</th><th>Monto ($)</th><th>Acciones</th></tr>
                         </thead>
                         <tbody id="gastos-table-body"></tbody>
                     </table>
@@ -236,12 +253,10 @@
             </div>
         </div>
 
+        <!-- SECCIÓN GASTOS FIJOS -->
         <div id="gastos-fijos" class="section">
             <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:1rem;">
-                    <h3>Programar Gastos Fijos</h3>
-                    <button class="btn-outline" onclick="solicitarNotificaciones()">Activar Alertas</button>
-                </div>
+                <h3>Programar Gastos Fijos</h3>
                 <form id="gf-form" class="grid-form">
                     <div class="input-group"><label>Nombre del Gasto</label><input type="text" id="gf-nombre" required></div>
                     <div class="input-group"><label>Monto Estimado ($)</label><input type="number" id="gf-monto" step="0.01" required></div>
@@ -265,6 +280,7 @@
             </div>
         </div>
 
+        <!-- SECCIÓN DIEZMO -->
         <div id="diezmo" class="section">
             <div class="card">
                 <h3>Cuadro Semanal de Diezmos</h3>
@@ -287,21 +303,50 @@
             </div>
         </div>
 
+        <!-- SECCIÓN PRESUPUESTO (Estilo matriz reorganizado de la imagen 1001234282.jpg) -->
         <div id="presupuesto" class="section">
             <div class="card">
-                <h3>Análisis de Gasto Mensual</h3>
-                <div class="filter-container"><label>Seleccionar Mes:</label><input type="month" id="mes-presupuesto" onchange="renderPresupuesto()"></div>
-                <div class="summary-grid"><div class="summary-box box-expense"><h4>Gasto Total</h4><p id="presupuesto-total-mes">$0.00</p></div></div>
-                <div class="table-responsive">
-                    <table>
-                        <thead><tr><th>Categoría</th><th>Total Gastado ($)</th><th>Proporción</th></tr></thead>
-                        <tbody id="presupuesto-body"></tbody>
-                    </table>
+                <h3>Análisis e Ingresos / Egresos Mensuales</h3>
+                <div class="filter-container">
+                    <div class="input-group">
+                        <label>Seleccionar Mes:</label>
+                        <input type="month" id="mes-presupuesto" onchange="renderPresupuesto()">
+                    </div>
                 </div>
+
+                <!-- Resumen de Control de Balance Superior -->
+                <div class="summary-grid">
+                    <div class="summary-box box-neto">
+                        <h4>IND (Ingreso Neto Disp.)</h4>
+                        <p id="matriz-ind">$0.00</p>
+                    </div>
+                    <div class="summary-box box-expense">
+                        <h4>Gastos Totales</h4>
+                        <p id="matriz-gastos">$0.00</p>
+                    </div>
+                    <div class="summary-box" id="matriz-balance-box" style="border: var(--border);">
+                        <h4>Balance / Uso</h4>
+                        <p id="matriz-balance">$0.00</p>
+                    </div>
+                </div>
+
+                <!-- Bloques Distribuidos de la Matriz -->
+                <div class="budget-matrix-grid" id="matriz-bloques-contenedor"></div>
             </div>
         </div>
 
+        <!-- SECCIÓN AJUSTES Y PERSONALIZACIÓN -->
         <div id="ajustes" class="section">
+            <div class="card">
+                <h3>Personalización del Sistema</h3>
+                <div class="grid-form" style="margin-bottom: 1.5rem;">
+                    <div class="input-group">
+                        <label>Tu Nombre / Nombre del Panel</label>
+                        <input type="text" id="config-nombre-usuario" placeholder="Ej. Familia Pérez o Spartanos" oninput="guardarPersonalizacion()">
+                    </div>
+                </div>
+            </div>
+
             <div class="card">
                 <h3>Configuración de Deducciones Automáticas</h3>
                 <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">Define qué porcentaje de tus ingresos quieres separar automáticamente. Al registrar un ingreso, se apartará este dinero del neto disponible.</p>
@@ -331,26 +376,6 @@
         </div>
     </div>
 
-    <div class="modal" id="edit-modal">
-        <div class="modal-content">
-            <div style="display:flex; justify-content:space-between; margin-bottom:1rem;"><h3>Editar Movimiento</h3><button class="close-modal" onclick="cerrarModal()">&times;</button></div>
-            <form id="edit-form" class="grid-form">
-                <input type="hidden" id="edit-id">
-                <div class="input-group"><label>Tipo</label><select id="edit-tipo"><option value="ingreso">Ingreso</option><option value="egreso">Egreso</option></select></div>
-                <div class="input-group"><label>Categoría</label><input type="text" id="edit-categoria" required></div>
-                <div class="input-group"><label>Monto Orig.</label>
-                    <div class="currency-container">
-                        <select id="edit-moneda"><option value="USD">$</option><option value="VES">Bs</option></select>
-                        <input type="number" id="edit-monto" step="0.01" required>
-                    </div>
-                </div>
-                <div class="input-group"><label>Tasa Aplicada</label><input type="number" id="edit-tasa" step="0.01" required></div>
-                <div class="input-group"><label>Fecha</label><input type="date" id="edit-fecha" required></div>
-                <button type="submit" style="grid-column: 1/-1;">Actualizar Registro</button>
-            </form>
-        </div>
-    </div>
-
     <script>
         // --- ZONA HORARIA Y FECHAS ---
         function getCaracasDateString() {
@@ -377,18 +402,27 @@
         }
 
         // --- BASES DE DATOS LOCALES ---
-        let transacciones = JSON.parse(localStorage.getItem('finanzas_data_v2')) || [];
-        let gastosFijos = JSON.parse(localStorage.getItem('finanzas_fijos_v2')) || [];
-        let configuracion = JSON.parse(localStorage.getItem('finanzas_config')) || { diezmoActivo: true, fondos: [] };
+        let transacciones = JSON.parse(localStorage.getItem('finanzas_data_v3')) || [];
+        let gastosFijos = JSON.parse(localStorage.getItem('finanzas_fijos_v3')) || [];
+        let configuracion = JSON.parse(localStorage.getItem('finanzas_config_v3')) || { diezmoActivo: true, fondos: [], usuarioNombre: "" };
         
-        // Migración automática de versión anterior si existe
-        if(transacciones.length === 0 && localStorage.getItem('finanzas_dolares_data')) {
-            transacciones = JSON.parse(localStorage.getItem('finanzas_dolares_data'));
-            transacciones.forEach(t => t.deducciones = { 'Diezmo': t.diezmoUSD || 0 });
-            localStorage.setItem('finanzas_data_v2', JSON.stringify(transacciones));
-        }
+        // Migración de categorías y subcategorías sugeridas
+        let categorias = JSON.parse(localStorage.getItem('cat_v3')) || ['Spartanos Barber Shop', 'Pedacito de Gracia', 'Universidad Arturo Michelena', 'Autos / Transporte', 'Casa / Vivienda', 'Comida / Alimentación', 'Entretenimiento', 'Ropa / Vestido', 'Salud', 'Seguros', 'Educación', 'Obligaciones'];
+        let subcategorias = JSON.parse(localStorage.getItem('subcat_v3')) || ['Gasolina', 'Arrendamiento - Alquiler', 'Luz', 'Gas', 'Teléfono', 'Servicio de Internet', 'Agua', 'Salidas', 'Medicamentos', 'Barberia', 'Chucherias'];
 
-        let categorias = JSON.parse(localStorage.getItem('categorias_guardadas')) || ['Spartanos Barber Shop', 'Pedacito de Gracia', 'Universidad Arturo Michelena'];
+        // Estructura fija de agrupación basada en la plantilla de la imagen
+        const MAPA_MATRIZ_CATEGORIAS = {
+            "Autos / Transporte": ["Gasolina", "Aceite", "Mantenimiento", "Reparaciones", "Parqueaderos", "Otros"],
+            "Casa / Vivienda": ["Arrendamiento - Alquiler", "Condominio", "Luz", "Gas", "Teléfono", "Servicio de Internet", "Agua", "Mantenimiento - Pintura", "Otros"],
+            "Comida / Alimentación": ["Mercado Semanal", "Panadería", "Otros"],
+            "Entretenimiento": ["Restaurantes", "Cine", "Salidas", "Otros"],
+            "Ropa / Vestido": ["Calzado", "Ropa", "Otros"],
+            "Salud": ["Doctores", "Dentista", "Medicamentos", "Seguro Medico", "Otros"],
+            "Seguros": ["Seguro de vida", "Seguro de automoviles", "Otros"],
+            "Gastos varios": ["Telefonos Celulares", "Barberia", "Suscripciones", "Cosmeticos", "Regalos", "Chucherias", "Otros"],
+            "Educación": ["Universidad", "Cursos", "Otros"],
+            "Obligaciones / Cuentas de ahorro": ["Credix", "Ahorros", "Préstamos", "Otros"]
+        };
 
         // --- INICIALIZACIÓN DE UI ---
         document.getElementById('fecha').value = getCaracasDateString();
@@ -396,6 +430,7 @@
         document.getElementById('mes-presupuesto').value = getCaracasDateString().slice(0,7);
         document.getElementById('filtro-semana').value = getCurrentWeekStr();
         document.getElementById('toggle-diezmo').checked = configuracion.diezmoActivo;
+        document.getElementById('config-nombre-usuario').value = configuracion.usuarioNombre || "";
 
         function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').classList.toggle('active'); }
         function showSection(id, el) {
@@ -414,11 +449,35 @@
                 document.getElementById('tasa-usd-input').value = data.monitors.usd.price.toFixed(2);
                 document.getElementById('api-status').textContent = "BCV Sincronizada ✓";
                 document.getElementById('api-status').style.color = "var(--income-color)";
-            } catch (e) { document.getElementById('api-status').textContent = "Modo Manual"; }
+                renderTodo();
+            } catch (e) { document.getElementById('api-status').textContent = "Modo Manual / Offline"; }
         }
         function getTasa() { return parseFloat(document.getElementById('tasa-usd-input').value) || 1; }
 
-        // --- FORMULARIOS & LOGICA CORE ---
+        // --- PERSONALIZACIÓN ---
+        function guardarPersonalizacion() {
+            configuracion.usuarioNombre = document.getElementById('config-nombre-usuario').value;
+            localStorage.setItem('finanzas_config_v3', JSON.stringify(configuracion));
+            actualizarSaludo();
+        }
+        function actualizarSaludo() {
+            const saludo = configuracion.usuarioNombre ? `Panel de ${configuracion.usuarioNombre}` : "Panel Financiero";
+            document.getElementById('app-greeting').textContent = saludo;
+        }
+
+        // --- MANEJO DE CATEGORÍAS Y SUBCATEGORÍAS AUTOMÁTICAS ---
+        function registrarCategoriaYSub(cat, sub) {
+            let modificado = false;
+            if(cat && !categorias.includes(cat)) { categorias.push(cat); localStorage.setItem('cat_v3', JSON.stringify(categorias)); modificado = true; }
+            if(sub && !subcategorias.includes(sub)) { subcategorias.push(sub); localStorage.setItem('subcat_v3', JSON.stringify(subcategorias)); modificado = true; }
+            if(modificado) actDatalists();
+        }
+        function actDatalists() {
+            document.getElementById('lista-categorias').innerHTML = categorias.map(c=>`<option value="${c}">`).join('');
+            document.getElementById('lista-subcategorias').innerHTML = subcategorias.map(s=>`<option value="${s}">`).join('');
+        }
+
+        // --- LOGICA DEDUCCIONES ---
         function calcularDeducciones(montoUSD) {
             let deduc = {};
             if(configuracion.diezmoActivo) deduc['Diezmo'] = montoUSD * 0.10;
@@ -439,9 +498,7 @@
         document.getElementById('monto').addEventListener('input', previewDeducciones);
         document.getElementById('tipo').addEventListener('change', previewDeducciones);
 
-        function guardarCat(c) { if(!categorias.includes(c)){ categorias.push(c); localStorage.setItem('categorias_guardadas', JSON.stringify(categorias)); actCat(); } }
-        function actCat() { document.getElementById('lista-categorias').innerHTML = categorias.map(c=>`<option value="${c}">`).join(''); }
-
+        // --- FORMULARIOS ---
         document.getElementById('finance-form').addEventListener('submit', e => {
             e.preventDefault();
             const tipo = document.getElementById('tipo').value;
@@ -450,30 +507,34 @@
             const tasa = getTasa();
             const usd = moneda === 'USD' ? orig : orig / tasa;
             const cat = document.getElementById('categoria').value.trim();
+            const sub = document.getElementById('subcategoria').value.trim();
             
             transacciones.push({
-                id: Date.now(), tipo, categoria: cat, monedaOriginal: moneda, montoOriginal: orig, tasa, montoUSD: usd,
+                id: Date.now(), tipo, categoria: cat, subcategoria: sub, monedaOriginal: moneda, montoOriginal: orig, tasa, montoUSD: usd,
                 deducciones: tipo === 'ingreso' ? calcularDeducciones(usd) : {},
                 fecha: document.getElementById('fecha').value
             });
-            guardarCat(cat); guardarBD(); document.getElementById('finance-form').reset(); document.getElementById('fecha').value = getCaracasDateString(); previewDeducciones();
+            registrarCategoriaYSub(cat, sub); guardarBD(); document.getElementById('finance-form').reset(); document.getElementById('fecha').value = getCaracasDateString(); previewDeducciones();
         });
 
-        // Formulario rápido Gastos
         document.getElementById('gastos-form').addEventListener('submit', e => {
             e.preventDefault();
             const usd = parseFloat(document.getElementById('g-monto').value);
             const cat = document.getElementById('g-categoria').value.trim();
-            transacciones.push({ id: Date.now(), tipo: 'egreso', categoria: cat, monedaOriginal: 'USD', montoOriginal: usd, tasa: getTasa(), montoUSD: usd, deducciones: {}, fecha: document.getElementById('g-fecha').value });
-            guardarCat(cat); guardarBD(); document.getElementById('gastos-form').reset(); document.getElementById('g-fecha').value = getCaracasDateString();
+            const sub = document.getElementById('g-subcategoria').value.trim();
+            transacciones.push({ id: Date.now(), tipo: 'egreso', categoria: cat, subcategoria: sub, monedaOriginal: 'USD', montoOriginal: usd, tasa: getTasa(), montoUSD: usd, deducciones: {}, fecha: document.getElementById('g-fecha').value });
+            registrarCategoriaYSub(cat, sub); guardarBD(); document.getElementById('gastos-form').reset(); document.getElementById('g-fecha').value = getCaracasDateString();
         });
 
-        function guardarBD() { localStorage.setItem('finanzas_data_v2', JSON.stringify(transacciones)); renderTodo(); }
-        function eliminarT(id) { if(confirm("¿Eliminar?")) { transacciones = transacciones.filter(t=>t.id!==id); guardarBD(); } }
+        function guardarBD() { 
+            localStorage.setItem('finanzas_data_v3', JSON.stringify(transacciones)); 
+            renderTodo(); 
+        }
+        function eliminarT(id) { if(confirm("¿Eliminar este registro?")) { transacciones = transacciones.filter(t=>t.id!==id); guardarBD(); } }
 
-        // --- RENDERIZADO GLOBAL ---
+        // --- RENDERIZADOS ---
         function renderTodo() {
-            actCat(); renderInicio(); renderGastosFijos(); renderAjustes(); renderPresupuesto(); renderDiezmoSemanal(); renderTablaGastos();
+            actDatalists(); actualizarSaludo(); renderInicio(); renderGastosFijos(); renderAjustes(); renderPresupuesto(); renderDiezmoSemanal(); renderTablaGastos();
         }
 
         function renderInicio() {
@@ -498,10 +559,11 @@
             const tb = document.getElementById('table-body'); tb.innerHTML = '';
             transacciones.slice(-10).reverse().forEach(t => {
                 let dedSt = Object.entries(t.deducciones).map(([k,v])=>`${k}: $${v.toFixed(2)}`).join('<br>') || '-';
+                let subLabel = t.subcategoria ? ` (${t.subcategoria})` : '';
                 tb.innerHTML += `<tr>
                     <td>${t.fecha}</td>
                     <td><strong style="color:${t.tipo==='ingreso'?'var(--income-color)':'var(--expense-color)'}">${t.tipo.toUpperCase()}</strong></td>
-                    <td>${t.categoria}</td>
+                    <td>${t.categoria}${subLabel}</td>
                     <td>$${t.montoUSD.toFixed(2)}</td>
                     <td style="font-size:0.8rem">${dedSt}</td>
                     <td><button class="btn-sm btn-delete" onclick="eliminarT(${t.id})">X</button></td>
@@ -515,7 +577,8 @@
             const tb = document.getElementById('gastos-table-body'); tb.innerHTML = '';
             transacciones.filter(t => t.tipo === 'egreso' && (!ini || t.fecha >= ini) && (!fin || t.fecha <= fin)).reverse().forEach(t => {
                 let sigla = t.monedaOriginal === 'USD' ? '$' : 'Bs';
-                tb.innerHTML += `<tr><td>${t.fecha}</td><td>${t.categoria}</td><td>${t.montoOriginal.toFixed(2)} ${sigla}</td><td>$${t.montoUSD.toFixed(2)}</td><td><button class="btn-sm btn-delete" onclick="eliminarT(${t.id})">X</button></td></tr>`;
+                let subLabel = t.subcategoria ? ` (${t.subcategoria})` : '';
+                tb.innerHTML += `<tr><td>${t.fecha}</td><td>${t.categoria}${subLabel}</td><td>${t.montoOriginal.toFixed(2)} ${sigla}</td><td>$${t.montoUSD.toFixed(2)}</td><td><button class="btn-sm btn-delete" onclick="eliminarT(${t.id})">X</button></td></tr>`;
             });
         }
         document.getElementById('g-filtro-inicio').addEventListener('change', renderTablaGastos);
@@ -528,7 +591,7 @@
                 id: Date.now(), nombre: document.getElementById('gf-nombre').value, monto: parseFloat(document.getElementById('gf-monto').value),
                 frecuencia: document.getElementById('gf-frecuencia').value, proxima: document.getElementById('gf-proxima').value
             });
-            localStorage.setItem('finanzas_fijos_v2', JSON.stringify(gastosFijos)); document.getElementById('gf-form').reset(); renderGastosFijos();
+            localStorage.setItem('finanzas_fijos_v3', JSON.stringify(gastosFijos)); document.getElementById('gf-form').reset(); renderGastosFijos();
         });
 
         function pagarGF(id) {
@@ -538,9 +601,9 @@
             if(g.frecuencia==='quincenal') d.setDate(d.getDate()+15);
             if(g.frecuencia==='semanal') d.setDate(d.getDate()+7);
             g.proxima = new Intl.DateTimeFormat('en-CA').format(d);
-            localStorage.setItem('finanzas_fijos_v2', JSON.stringify(gastosFijos)); renderGastosFijos();
+            localStorage.setItem('finanzas_fijos_v3', JSON.stringify(gastosFijos)); renderGastosFijos();
         }
-        function elimGF(id){ gastosFijos=gastosFijos.filter(x=>x.id!==id); localStorage.setItem('finanzas_fijos_v2',JSON.stringify(gastosFijos)); renderGastosFijos(); }
+        function elimGF(id){ gastosFijos=gastosFijos.filter(x=>x.id!==id); localStorage.setItem('finanzas_fijos_v3',JSON.stringify(gastosFijos)); renderGastosFijos(); }
 
         function renderGastosFijos() {
             const tb = document.getElementById('gastos-fijos-body'); tb.innerHTML = '';
@@ -554,7 +617,7 @@
             });
         }
 
-        // --- DIEZMO SEMANAL EXACTO ---
+        // --- DIEZMO SEMANAL ---
         function renderDiezmoSemanal() {
             const week = document.getElementById('filtro-semana').value;
             if(!week) return;
@@ -565,7 +628,7 @@
             let inWeek = transacciones.filter(t => t.tipo === 'ingreso' && t.fecha >= inicio && t.fecha <= fin && t.deducciones['Diezmo']);
             inWeek.forEach(t => {
                 let dUSD = t.deducciones['Diezmo'];
-                let eqBs = dUSD * t.tasa; // EXACTO: Usa la tasa registrada en ese movimiento
+                let eqBs = dUSD * t.tasa;
                 tDiezmo += dUSD;
                 tb.innerHTML += `<tr><td>${t.fecha}</td><td>$${t.montoUSD.toFixed(2)}</td><td style="color:var(--tithe-color); font-weight:bold;">$${dUSD.toFixed(2)}</td><td>${t.tasa} Bs</td><td>Bs. ${eqBs.toFixed(2)}</td></tr>`;
             });
@@ -573,31 +636,105 @@
             document.getElementById('semana-total-diezmo').textContent = `$${tDiezmo.toFixed(2)}`;
         }
 
-        // --- PRESUPUESTO ---
+        // --- PRESUPUESTO MATRIZ (REDISEÑADO) ---
         function renderPresupuesto() {
             const mes = document.getElementById('mes-presupuesto').value;
-            let gastos = 0; let cats = {};
-            transacciones.filter(t => t.tipo === 'egreso' && t.fecha.startsWith(mes)).forEach(t => {
-                gastos += t.montoUSD; cats[t.categoria] = (cats[t.categoria]||0) + t.montoUSD;
+            let totalIngresosMes = 0;
+            let totalDeduccionesMes = 0;
+            let totalGastadoMes = 0;
+
+            // Filtramos movimientos del mes actual
+            let movimientosMes = transacciones.filter(t => t.fecha.startsWith(mes));
+
+            // Estructura para agrupar montos reales por Categoría -> Subcategoría
+            let desglose = {};
+            for (let c in MAPA_MATRIZ_CATEGORIAS) {
+                desglose[c] = { total: 0, subcats: {} };
+                MAPA_MATRIZ_CATEGORIAS[c].forEach(s => desglose[c].subcats[s] = 0);
+            }
+
+            movimientosMes.forEach(t => {
+                if (t.tipo === 'ingreso') {
+                    totalIngresosMes += t.montoUSD;
+                    for (let k in t.deducciones) { totalDeduccionesMes += t.deducciones[k]; }
+                } else if (t.tipo === 'egreso') {
+                    totalGastadoMes += t.montoUSD;
+                    
+                    // Intentamos clasificar el gasto en la matriz estructurada
+                    let matchedCat = Object.keys(MAPA_MATRIZ_CATEGORIAS).find(c => c.toLowerCase() === t.categoria.toLowerCase());
+                    if (matchedCat) {
+                        desglose[matchedCat].total += t.montoUSD;
+                        let matchedSub = MAPA_MATRIZ_CATEGORIAS[matchedCat].find(s => s.toLowerCase() === (t.subcategoria || "").toLowerCase());
+                        if (matchedSub) {
+                            desglose[matchedCat].subcats[matchedSub] += t.montoUSD;
+                        } else {
+                            desglose[matchedCat].subcats["Otros"] += t.montoUSD;
+                        }
+                    } else {
+                        // Si no encaja en las fijas, lo llevamos temporalmente a Gastos Varios -> Otros
+                        desglose["Gastos varios"].total += t.montoUSD;
+                        desglose["Gastos varios"].subcats["Otros"] += t.montoUSD;
+                    }
+                }
             });
-            document.getElementById('presupuesto-total-mes').textContent = `$${gastos.toFixed(2)}`;
-            let tb = document.getElementById('presupuesto-body'); tb.innerHTML = '';
-            for(let c in cats) {
-                let pct = gastos > 0 ? ((cats[c]/gastos)*100).toFixed(1) : 0;
-                tb.innerHTML += `<tr><td>${c}</td><td>$${cats[c].toFixed(2)}</td><td>${pct}% <div style="height:5px; background:var(--expense-color); width:${pct}%"></div></td></tr>`;
+
+            let ind = totalIngresosMes - totalDeduccionesMes;
+            let balance = ind - totalGastadoMes;
+            let pctUso = ind > 0 ? ((totalGastadoMes / ind) * 100).toFixed(0) : 0;
+
+            // Actualizar Tarjetas de Resumen
+            document.getElementById('matriz-ind').textContent = `$${ind.toFixed(2)}`;
+            document.getElementById('matriz-gastos').textContent = `$${totalGastadoMes.toFixed(2)}`;
+            document.getElementById('matriz-balance').textContent = pctUso + "% Utilizado";
+            
+            let bBox = document.getElementById('matriz-balance-box');
+            if(pctUso > 100) { bBox.style.background = "#fee2e2"; bBox.style.color = "var(--expense-color)"; }
+            else { bBox.style.background = "#e6f4ea"; bBox.style.color = "var(--income-color)"; }
+
+            // Generar Bloques Visuales de la Matriz
+            let contenedor = document.getElementById('matriz-bloques-contenedor');
+            contenedor.innerHTML = '';
+
+            for (let cat in desglose) {
+                let bloque = desglose[cat];
+                let pctBloque = totalGastadoMes > 0 ? ((bloque.total / totalGastadoMes) * 100).toFixed(0) : 0;
+                
+                let bloqueHTML = `
+                    <div class="budget-block">
+                        <div class="budget-block-header">
+                            <span>${cat}</span>
+                            <span class="budget-block-pct">$${bloque.total.toFixed(2)} (${pctBloque}%)</span>
+                        </div>
+                `;
+
+                for (let sub in bloque.subcats) {
+                    let montoSub = bloque.subcats[sub];
+                    // Mostramos las filas con montos o las básicas para mantener la estructura visual limpia
+                    if (montoSub > 0 || ["Gasolina", "Arrendamiento - Alquiler", "Luz", "Salidas", "Medicamentos", "Chucherias"].includes(sub)) {
+                        bloqueHTML += `
+                            <div class="budget-row">
+                                <span class="budget-row-label">${sub}</span>
+                                <span class="budget-row-val">$${montoSub.toFixed(2)}</span>
+                            </div>
+                        `;
+                    }
+                }
+
+                bloqueHTML += `</div>`;
+                contenedor.innerHTML += bloqueHTML;
             }
         }
 
         // --- AJUSTES Y FONDOS EXTRA ---
-        function guardarConfiguracion() { configuracion.diezmoActivo = document.getElementById('toggle-diezmo').checked; localStorage.setItem('finanzas_config', JSON.stringify(configuracion)); renderTodo(); }
+        function guardarConfiguracion() { configuracion.diezmoActivo = document.getElementById('toggle-diezmo').checked; localStorage.setItem('finanzas_config_v3', JSON.stringify(configuracion)); renderTodo(); }
         
         document.getElementById('fondo-form').addEventListener('submit', e => {
             e.preventDefault();
             configuracion.fondos.push({ id: Date.now(), nombre: document.getElementById('fondo-nombre').value, pct: parseFloat(document.getElementById('fondo-pct').value) });
-            localStorage.setItem('finanzas_config', JSON.stringify(configuracion)); document.getElementById('fondo-form').reset(); renderAjustes();
+            localStorage.setItem('finanzas_config_v3', JSON.stringify(configuracion)); document.getElementById('fondo-form').reset(); renderAjustes();
         });
 
-        function elimFondo(id){ configuracion.fondos=configuracion.fondos.filter(x=>x.id!==id); localStorage.setItem('finanzas_config',JSON.stringify(configuracion)); renderAjustes(); }
+        function elimFondo(id){ configuracion.fondos=configuracion.fondos.filter(x=>x.id!==id); localStorage.setItem('finanzas_config_v3',JSON.stringify(configuracion)); renderAjustes(); }
 
         function renderAjustes() {
             let fAcum = {}; transacciones.forEach(t => { if(t.tipo==='ingreso') for(let k in t.deducciones) fAcum[k] = (fAcum[k]||0) + t.deducciones[k]; });
@@ -608,12 +745,19 @@
             });
         }
 
-        // --- BACKUP A GMAIL ---
+        // --- RESPALDOS (BACKUP Y RESTAURACIÓN EXACTA) ---
         function backupGmail() {
-            const data = { transacciones, gastosFijos, configuracion };
-            const jsonStr = JSON.stringify(data, null, 2);
+            // Empaquetamos exclusivamente los datos limpios de la aplicación
+            const dataALanzar = { 
+                transacciones, 
+                gastosFijos, 
+                configuracion,
+                categorias,
+                subcategorias
+            };
+            const jsonStr = JSON.stringify(dataALanzar, null, 2);
             
-            // 1. Descargar Archivo Físico
+            // 1. Descarga automática del archivo físico JSON de datos
             const blob = new Blob([jsonStr], { type: "application/json" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -623,12 +767,48 @@
             a.click();
             document.body.removeChild(a);
 
-            // 2. Abrir Gmail
-            const bodyText = `Hola,\n\nAdjunta a este correo el archivo JSON que se acaba de descargar en tu computadora/teléfono para guardar tu copia de seguridad.\n\nFecha: ${getCaracasDateString()}`;
+            // 2. Redirección sugerida a Gmail para adjuntar el respaldo de forma segura
+            const bodyText = `Hola,\n\nAdjunta a este correo el archivo JSON que se acaba de descargar para resguardar tu copia de seguridad.\n\nPara restaurarlo, usa el botón "Cargar Backup" de la app.\n\nFecha de respaldo: ${getCaracasDateString()}`;
             window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=tu_correo@gmail.com&su=Copia de Seguridad Finanzas&body=${encodeURIComponent(bodyText)}`, '_blank');
         }
 
-        // Inicializar
+        function importarBackup(event) {
+            const archivo = event.target.files[0];
+            if (!archivo) return;
+
+            const lector = new FileReader();
+            lector.onload = function(e) {
+                try {
+                    const datosParseados = JSON.parse(e.target.result);
+                    
+                    // Validamos que contenga las estructuras requeridas básicas
+                    if (datosParseados.transacciones && datosParseados.gastosFijos && datosParseados.configuracion) {
+                        transacciones = datosParseados.transacciones;
+                        gastosFijos = datosParseados.gastosFijos;
+                        configuracion = datosParseados.configuracion;
+                        if(datosParseados.categorias) categorias = datosParseados.categorias;
+                        if(datosParseados.subcategorias) subcategorias = datosParseados.subcategorias;
+
+                        // Guardamos de inmediato en el LocalStorage
+                        localStorage.setItem('finanzas_data_v3', JSON.stringify(transacciones));
+                        localStorage.setItem('finanzas_fijos_v3', JSON.stringify(gastosFijos));
+                        localStorage.setItem('finanzas_config_v3', JSON.stringify(configuracion));
+                        localStorage.setItem('cat_v3', JSON.stringify(categorias));
+                        localStorage.setItem('subcat_v3', JSON.stringify(subcategorias));
+
+                        alert("¡Información cargada y restaurada con éxito! ✓");
+                        location.reload(); // Recarga la visualización con los datos cargados
+                    } else {
+                        alert("El archivo no posee el formato de respaldo correcto.");
+                    }
+                } catch (err) {
+                    alert("Error leyendo el archivo de copia de seguridad.");
+                }
+            };
+            lector.readAsText(archivo);
+        }
+
+        // --- INICIALIZAR ---
         obtenerTasasBCV();
         renderTodo();
     </script>
