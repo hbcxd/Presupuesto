@@ -1,4 +1,4 @@
-const CACHE_NAME = 'finanzas-pwa-v4';
+const CACHE_NAME = 'finanzas-pwa-v1.1';
 const ASSETS = [
   'index.html',
   'manifest.json',
