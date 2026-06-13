@@ -9,123 +9,134 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link class="apple-touch-icon" href="icon-192.png">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
         :root {
-            var(--bg-color): #f5f5f5;
+            --bg-color: #f4f6f8;
             --card-bg: #ffffff;
             --text-main: #1a1a1a;
-            --text-muted: #737373;
+            --text-muted: #6b7280;
             --accent-gold: #d4af37;
             --accent-gold-hover: #b5952f;
-            --sidebar-bg: #121212;
-            --sidebar-text: #e0e0e0;
-            --income-color: #2e7d32;
-            --expense-color: #c62828;
-            --border-radius: 8px;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-            --border: 1px solid #e5e5e5;
-            --bg-color: #f5f5f5;
+            --sidebar-bg: #111827;
+            --sidebar-text: #f3f4f6;
+            --income-color: #10b981;
+            --expense-color: #ef4444;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+            --border: 1px solid #e5e7eb;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
 
         .auth-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 1rem; background: var(--sidebar-bg); }
-        .auth-card { background: white; padding: 3rem 2rem; border-radius: var(--border-radius); box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; max-width: 400px; text-align: center; }
-        .auth-card h2 { margin-bottom: 0.5rem; color: #121212; font-weight: 300; letter-spacing: 1px; }
+        .auth-card { background: white; padding: 3rem 2rem; border-radius: var(--border-radius); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        .auth-card h2 { margin-bottom: 0.5rem; color: #111827; font-weight: 500; letter-spacing: -0.5px; }
         
         #app-content { display: none; width: 100%; }
 
-        .topbar { width: 100%; background: var(--card-bg); padding: 0 1.5rem; display: flex; align-items: center; border-bottom: var(--border); position: fixed; top: 0; left: 0; z-index: 998; height: 65px; justify-content: space-between; }
-        .topbar h3 { font-weight: 400; letter-spacing: 0.5px; color: var(--text-main); margin: 0; }
+        .topbar { width: 100%; background: var(--card-bg); padding: 0 1.5rem; display: flex; align-items: center; border-bottom: var(--border); position: fixed; top: 0; left: 0; z-index: 998; height: 70px; justify-content: space-between; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+        .topbar h3 { font-weight: 500; letter-spacing: -0.5px; color: var(--text-main); margin: 0; }
         
-        .main-content { margin-top: 65px; padding: 1.5rem 1rem; width: 100%; margin-bottom: 80px; }
-        .section { display: none; max-width: 1100px; margin: 0 auto; animation: fadeIn 0.5s ease; }
+        .main-content { margin-top: 70px; padding: 1.5rem 1rem; width: 100%; margin-bottom: 90px; }
+        .section { display: none; max-width: 1100px; margin: 0 auto; animation: fadeIn 0.4s ease-out; }
         .section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-        h1, h2, h3 { color: var(--text-main); font-weight: 500; margin-bottom: 1.2rem; letter-spacing: 0.5px; }
-        .card { background: var(--card-bg); border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 1.8rem; margin-bottom: 1.5rem; border: var(--border); }
+        h1, h2, h3 { color: var(--text-main); font-weight: 600; margin-bottom: 1.2rem; letter-spacing: -0.5px; }
+        .card { background: var(--card-bg); border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 1.8rem; margin-bottom: 1.5rem; border: var(--border); transition: box-shadow 0.3s ease; }
+        .card:hover { box-shadow: var(--shadow-hover); }
 
-        .tasas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; width: 100%; margin-bottom: 0.8rem; }
-        .tasas-grid input { font-size: 1.2rem; text-align: center; font-weight: bold; background: #fcfcfc; border: 1px solid #dcdcdc; color: var(--text-main); }
-        .tasas-grid label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+        .tasas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; width: 100%; margin-bottom: 1rem; }
+        .tasas-grid input { font-size: 1.25rem; text-align: center; font-weight: 600; background: #f9fafb; border: 1px solid #e5e7eb; color: var(--text-main); border-radius: 8px; padding: 0.5rem; }
+        .tasas-grid label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.3rem; font-weight: 500;}
 
         .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
         @media (min-width: 768px) { .summary-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); } }
-        .summary-box { padding: 1.5rem; border-radius: var(--border-radius); text-align: center; border: var(--border); background: var(--card-bg); transition: transform 0.2s; }
-        .summary-box:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
-        .summary-box h4 { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
-        .summary-box p { font-size: 1.6rem; font-weight: 300; }
+        .summary-box { padding: 1.5rem; border-radius: var(--border-radius); text-align: center; border: var(--border); background: var(--card-bg); transition: transform 0.2s; position: relative; overflow: hidden;}
+        .summary-box::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; }
+        .summary-box.box-income::before { background: var(--income-color); }
+        .summary-box.box-expense::before { background: var(--expense-color); }
+        .summary-box.box-neto::before { background: var(--accent-gold); }
+        .summary-box h4 { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;}
+        .summary-box p { font-size: 1.75rem; font-weight: 600; letter-spacing: -0.5px;}
         
         .box-income p { color: var(--income-color); }
         .box-expense p { color: var(--expense-color); }
-        .box-neto { border-color: #dcdcdc; }
-        .box-neto p { color: var(--text-main); font-weight: 500; }
+        .box-neto p { color: var(--text-main); }
 
         .grid-form { display: grid; grid-template-columns: 1fr; gap: 1.2rem; align-items: start; }
         @media (min-width: 768px) { .grid-form { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); } }
         .input-group { display: flex; flex-direction: column; }
-        label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; font-weight: 500; letter-spacing: 0.5px; }
-        input, select { padding: 0.8rem; border: var(--border); border-radius: 6px; font-size: 0.95rem; outline: none; background: #fafafa; width: 100%; transition: all 0.2s; }
-        input:focus, select:focus { border-color: var(--sidebar-bg); background: #fff; box-shadow: 0 0 0 2px rgba(18,18,18,0.1); }
+        label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem; font-weight: 500; }
+        input, select { padding: 0.75rem 1rem; border: var(--border); border-radius: 8px; font-size: 0.95rem; outline: none; background: #f9fafb; width: 100%; transition: all 0.2s; color: var(--text-main);}
+        input:focus, select:focus { border-color: var(--accent-gold); background: #ffffff; box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1); }
         
-        button { background: var(--sidebar-bg); color: white; border: none; padding: 0.8rem 1.2rem; border-radius: 6px; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: 0.3s; letter-spacing: 0.5px; }
-        button:hover { background: #2a2a2a; }
-        button[type="submit"] { background: var(--accent-gold); color: #121212; font-weight: 600; }
+        button { background: var(--sidebar-bg); color: white; border: none; padding: 0.75rem 1.2rem; border-radius: 8px; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        button:hover { background: #1f2937; transform: translateY(-1px); }
+        button[type="submit"] { background: var(--accent-gold); color: #ffffff; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,0.1);}
         button[type="submit"]:hover { background: var(--accent-gold-hover); }
         
-        .btn-delete { background: #fdf2f2; color: var(--expense-color); border: 1px solid #fad4d4; }
-        .btn-delete:hover { background: #fad4d4; }
-        .btn-pay { background: #f0fdf4; color: var(--income-color); border: 1px solid #bbf7d0; }
-        .btn-logout { background: transparent; border: 1px solid #dcdcdc; color: var(--text-main); font-size: 0.8rem; padding: 0.4rem 1rem; border-radius: 20px; }
-        .btn-logout:hover { background: #f5f5f5; }
+        .btn-delete { background: #fee2e2; color: var(--expense-color); border: 1px solid #fecaca; }
+        .btn-delete:hover { background: #fecaca; }
+        .btn-pay { background: #d1fae5; color: var(--income-color); border: 1px solid #a7f3d0; }
+        .btn-logout { background: transparent; border: 1px solid #e5e7eb; color: var(--text-main); font-size: 0.8rem; padding: 0.4rem 1rem; border-radius: 20px; font-weight: 500;}
+        .btn-logout:hover { background: #f3f4f6; }
         
         .preview-deductions { font-size: 0.8rem; margin-top: 0.5rem; font-weight: 500; color: var(--accent-gold); }
 
-        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 0.5rem; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.9rem; margin-top: 0.5rem; }
         th, td { padding: 1rem; text-align: left; border-bottom: var(--border); }
-        th { background: transparent; color: var(--text-muted); font-weight: 500; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; }
-        tr:hover td { background: #fafafa; }
+        th { background: #f9fafb; color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; }
+        th:first-child { border-top-left-radius: 8px; }
+        th:last-child { border-top-right-radius: 8px; }
+        tr:hover td { background: #f9fafb; }
         
         .action-btns { display: flex; gap: 0.5rem; }
-        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.75rem; border-radius: 4px; cursor: pointer; font-weight: 500; }
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.75rem; border-radius: 6px; cursor: pointer; font-weight: 500; }
         .currency-container { display: grid; grid-template-columns: 80px 1fr; gap: 0.5rem; }
-        .table-responsive { overflow-x: auto; }
-        .filter-container { display: flex; flex-wrap: wrap; gap: 1rem; background: #fafafa; padding: 1.2rem; border-radius: 8px; border: var(--border); margin-bottom: 1.5rem; align-items: flex-end; }
+        .table-responsive { overflow-x: auto; border-radius: 8px; border: var(--border); }
+        .filter-container { display: flex; flex-wrap: wrap; gap: 1rem; background: #f9fafb; padding: 1.2rem; border-radius: 8px; border: var(--border); margin-bottom: 1.5rem; align-items: flex-end; }
 
         .budget-matrix-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(48%, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
         @media (max-width: 768px) { .budget-matrix-grid { grid-template-columns: 1fr; } }
         .budget-block { border: var(--border); border-radius: var(--border-radius); background: var(--card-bg); overflow: hidden; box-shadow: var(--shadow); }
-        .budget-block-header { background: #fdfdfd; color: var(--text-main); padding: 1rem; display: flex; justify-content: space-between; align-items: center; font-weight: 500; font-size: 0.95rem; border-bottom: 2px solid var(--accent-gold); }
-        .budget-block-pct { background: #f0f0f0; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.75rem; color: var(--text-muted); }
-        .budget-row { display: flex; justify-content: space-between; padding: 0.8rem 1rem; border-bottom: 1px solid #f5f5f5; font-size: 0.9rem; align-items: center; }
+        .budget-block-header { background: #f9fafb; color: var(--text-main); padding: 1rem; display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 0.95rem; border-bottom: 2px solid var(--accent-gold); }
+        .budget-block-pct { background: #e5e7eb; padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.75rem; color: var(--text-muted); font-weight: 500;}
+        .budget-row { display: flex; justify-content: space-between; padding: 0.8rem 1rem; border-bottom: 1px solid #f3f4f6; font-size: 0.9rem; align-items: center; }
         .budget-row:last-child { border-bottom: none; }
         .budget-row-label { color: var(--text-muted); }
         .budget-row-val { font-weight: 500; color: var(--text-main); }
         
         .toggle-switch { display: inline-flex; align-items: center; cursor: pointer; }
         .toggle-switch input { display: none; }
-        .slider { width: 36px; height: 18px; background: #e0e0e0; border-radius: 20px; position: relative; margin-right: 12px; transition: 0.3s; }
-        .slider::before { content: ""; position: absolute; width: 14px; height: 14px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        .slider { width: 40px; height: 22px; background: #e5e7eb; border-radius: 20px; position: relative; margin-right: 12px; transition: 0.3s; }
+        .slider::before { content: ""; position: absolute; width: 16px; height: 16px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
         input:checked + .slider { background: var(--accent-gold); }
         input:checked + .slider::before { transform: translateX(18px); }
 
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--sidebar-bg); display: flex; justify-content: space-between; align-items: center; height: 70px; z-index: 1000; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); }
-        .bottom-nav a { display: flex; flex-direction: column; align-items: center; justify-content: center; color: #737373; text-decoration: none; font-size: 0.65rem; font-weight: 400; flex: 1; height: 100%; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
-        .bottom-nav a .nav-icon { font-size: 1.2rem; margin-bottom: 4px; filter: grayscale(100%); opacity: 0.6; }
+        /* Ajuste Navigation Bar Móvil - Scroll Horizontal */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--sidebar-bg); display: flex; align-items: center; height: 75px; z-index: 1000; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); overflow-x: auto; white-space: nowrap; padding: 0 1rem; gap: 1.5rem; justify-content: flex-start; }
+        .bottom-nav::-webkit-scrollbar { display: none; }
+        @media (min-width: 768px) { .bottom-nav { justify-content: center; } }
+        .bottom-nav a { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; color: #9ca3af; text-decoration: none; font-size: 0.7rem; font-weight: 500; height: 100%; transition: all 0.2s; letter-spacing: 0.02em; min-width: 50px; }
+        .bottom-nav a .nav-icon { font-size: 1.4rem; margin-bottom: 4px; filter: grayscale(100%); opacity: 0.5; transition: all 0.3s; }
         .bottom-nav a.active-link { color: var(--accent-gold); }
-        .bottom-nav a.active-link .nav-icon { filter: none; opacity: 1; }
+        .bottom-nav a.active-link .nav-icon { filter: none; opacity: 1; transform: scale(1.1); }
 
-        #update-toast {
-            display: none; position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
-            background: var(--sidebar-bg); color: white; padding: 1rem 1.5rem; border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 1001; align-items: center; gap: 1rem; font-weight: 400; font-size: 0.9rem; border: 1px solid #333;
-        }
-        #update-toast button { background: var(--accent-gold); color: #121212; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.8rem; cursor: pointer; border: none; font-weight: 600; }
+        #update-toast { display: none; position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: var(--sidebar-bg); color: white; padding: 1rem 1.5rem; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 1001; align-items: center; gap: 1rem; font-weight: 400; font-size: 0.9rem; border: 1px solid #374151; }
+        #update-toast button { background: var(--accent-gold); color: #ffffff; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; border: none; font-weight: 600; }
         
-        .status-badge { display: inline-block; padding: 0.3rem 0.6rem; border-radius: 20px; font-size: 0.7rem; font-weight: 500; letter-spacing: 0.5px; }
+        .status-badge { display: inline-block; padding: 0.3rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.02em; }
+        
+        /* Contenedor Chart.js */
+        .chart-container { position: relative; height: 300px; width: 100%; margin-top: 1rem; }
     </style>
 </head>
 <body>
@@ -137,9 +148,13 @@
 
     <div class="auth-container" id="auth-container">
         <div class="auth-card">
-            <h2 style="font-weight: 500;">Control Financiero</h2>
-            <p style="color: var(--text-muted); margin-bottom: 2.5rem; font-size: 0.9rem;">Gestión Administrativa Corporativa</p>
-            <button onclick="loginConGoogle()" style="width: 100%; background: #ffffff; color: #121212; border: 1px solid #dcdcdc; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 400;">
+            <div style="width: 60px; height: 60px; background: var(--accent-gold); border-radius: 50%; margin: 0 auto 1.5rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3);">
+                📊
+            </div>
+            <h2>Control Financiero</h2>
+            <p style="color: var(--text-muted); margin-bottom: 2.5rem; font-size: 0.95rem;">Gestión Administrativa Corporativa</p>
+            <button onclick="loginConGoogle()" style="width: 100%; background: #f9fafb; color: #111827; border: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 500; font-size: 1rem;">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style="width: 20px;">
                 Acceder con Google
             </button>
         </div>
@@ -152,16 +167,17 @@
         </div>
 
         <nav class="bottom-nav">
-            <a href="#" class="active-link" onclick="showSectionMobile('inicio', this)"><span class="nav-icon">📊</span><span>Panel</span></a>
+            <a href="#" class="active-link" onclick="showSectionMobile('inicio', this)"><span class="nav-icon">🏠</span><span>Panel</span></a>
             <a href="#" onclick="showSectionMobile('gastos', this)"><span class="nav-icon">💳</span><span>Egresos</span></a>
+            <a href="#" onclick="showSectionMobile('estadisticas', this)"><span class="nav-icon">📈</span><span>Stats</span></a>
+            <a href="#" onclick="showSectionMobile('diezmo-view', this)"><span class="nav-icon">🕊️</span><span>Diezmo</span></a>
             <a href="#" onclick="showSectionMobile('gastos-fijos', this)"><span class="nav-icon">🗓️</span><span>Fijos</span></a>
-            <a href="#" onclick="showSectionMobile('presupuesto', this)"><span class="nav-icon">📈</span><span>Matriz</span></a>
+            <a href="#" onclick="showSectionMobile('presupuesto', this)"><span class="nav-icon">📊</span><span>Matriz</span></a>
             <a href="#" onclick="showSectionMobile('devaluacion', this)"><span class="nav-icon">📉</span><span>VES Lab</span></a>
             <a href="#" onclick="showSectionMobile('ajustes', this)"><span class="nav-icon">⚙️</span><span>Ajustes</span></a>
         </nav>
 
         <div class="main-content">
-            <!-- PANEL PRINCIPAL -->
             <div id="inicio" class="section active">
                 <div class="card">
                     <div class="tasas-grid">
@@ -175,12 +191,12 @@
                         </div>
                     </div>
                     <div style="display: flex; justify-content: flex-end;">
-                        <span id="api-status" class="status-badge" style="background: #f0f0f0; color: var(--text-muted);">Sincronizando proxy...</span>
+                        <span id="api-status" class="status-badge" style="background: #f3f4f6; color: var(--text-muted);">Sincronizando proxy...</span>
                     </div>
                 </div>
 
-                <div class="card" style="border-left: 3px solid var(--accent-gold);">
-                    <h3 style="font-size: 1rem; margin-bottom: 1rem;">Calculadora de Cambios</h3>
+                <div class="card" style="border-left: 4px solid var(--accent-gold);">
+                    <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Calculadora de Cambios</h3>
                     <div class="grid-form" style="align-items: flex-end; grid-template-columns: 1fr 1fr 1fr;">
                         <div class="input-group">
                             <label>Monto</label>
@@ -196,7 +212,7 @@
                             </select>
                         </div>
                         <div class="input-group">
-                            <div style="background: var(--bg-color); padding: 0.75rem; border-radius: 6px; text-align: center; border: var(--border);">
+                            <div style="background: #f9fafb; padding: 0.75rem; border-radius: 8px; text-align: center; border: var(--border);">
                                 <strong style="font-size: 1.1rem; color: var(--text-main);" id="calc-resultado">0.00</strong>
                             </div>
                         </div>
@@ -238,7 +254,6 @@
                 </div>
             </div>
 
-            <!-- EGRESOS -->
             <div id="gastos" class="section">
                 <div class="card">
                     <h3>Registro Rápido de Egresos</h3>
@@ -247,7 +262,7 @@
                         <div class="input-group"><label>Subcategoría</label><input type="text" id="g-subcategoria" autocomplete="off"></div>
                         <div class="input-group"><label>Monto ($)</label><input type="number" id="g-monto" step="0.01" min="0" required></div>
                         <div class="input-group"><label>Fecha</label><input type="date" id="g-fecha" required></div>
-                        <div class="input-group" style="justify-content: flex-end;"><button type="submit" style="background: #121212; color:white">Registrar Egreso</button></div>
+                        <div class="input-group" style="justify-content: flex-end;"><button type="submit" style="background: #111827; color:white">Registrar Egreso</button></div>
                     </form>
                 </div>
                 <div class="card">
@@ -265,7 +280,44 @@
                 </div>
             </div>
 
-            <!-- GASTOS FIJOS -->
+            <div id="estadisticas" class="section">
+                <div class="card">
+                    <h3>Estadísticas de Ingresos</h3>
+                    <div class="filter-container">
+                        <div class="input-group"><label>Desde</label><input type="date" id="stat-inicio" onchange="renderEstadisticas()"></div>
+                        <div class="input-group"><label>Hasta</label><input type="date" id="stat-fin" onchange="renderEstadisticas()"></div>
+                    </div>
+                    
+                    <div class="summary-box box-income" style="margin-bottom: 2rem;">
+                        <h4>Total Ingresos Generados</h4>
+                        <p id="stat-total-ingresos">$0.00</p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 2rem; align-items: start;">
+                        <div class="chart-container">
+                            <canvas id="ingresosChart"></canvas>
+                        </div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead><tr><th>Categoría de Ingreso</th><th>Monto Total ($)</th><th>Porcentaje</th></tr></thead>
+                                <tbody id="stat-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="diezmo-view" class="section">
+                <div class="card">
+                    <h3>Control de Diezmo</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.5;">
+                        Desglose automatizado del 10% deducido en tus ingresos, agrupado semanalmente de lunes a domingo. Los montos en bolívares se calculan en base a la tasa de cambio del día de registro.
+                    </p>
+                    <div id="diezmo-container">
+                        </div>
+                </div>
+            </div>
+
             <div id="gastos-fijos" class="section">
                 <div class="card">
                     <h3>Control de Obligaciones Fijas</h3>
@@ -279,7 +331,7 @@
                         <div class="input-group"><label>Próximo Vencimiento</label><input type="date" id="gf-proxima" required></div>
                         <div class="input-group" style="justify-content: flex-end;"><button type="submit">Programar</button></div>
                     </form>
-                    <div class="table-responsive">
+                    <div class="table-responsive" style="margin-top: 1.5rem;">
                         <table>
                             <thead><tr><th>Obligación</th><th>Monto ($)</th><th>Ciclo</th><th>Vencimiento</th><th>Estatus</th><th>Acciones</th></tr></thead>
                             <tbody id="gastos-fijos-body"></tbody>
@@ -288,7 +340,6 @@
                 </div>
             </div>
 
-            <!-- PRESUPUESTO -->
             <div id="presupuesto" class="section">
                 <div class="card">
                     <h3>Matriz Financiera Mensual</h3>
@@ -302,11 +353,10 @@
                 </div>
             </div>
 
-            <!-- NUEVO: LABORATORIO VES -->
             <div id="devaluacion" class="section">
-                <div class="card" style="border-left: 3px solid #1a1a1a;">
+                <div class="card" style="border-left: 4px solid #111827;">
                     <h3>Laboratorio VES (Experimental)</h3>
-                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.4;">Esta herramienta opera de forma aislada a tu contabilidad principal. Ingresa el dinero que mantienes estancado en bolívares para registrar y evaluar cómo se devalúa frente al dólar con el paso de los días.</p>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.5;">Esta herramienta opera de forma aislada a tu contabilidad principal. Ingresa el dinero que mantienes estancado en bolívares para registrar y evaluar cómo se devalúa frente al dólar con el paso de los días.</p>
                     
                     <div class="grid-form" style="align-items: flex-end;">
                         <div class="input-group">
@@ -315,7 +365,7 @@
                         </div>
                         <div class="input-group">
                             <label>Equivalente Real ($)</label>
-                            <div style="background: var(--bg-color); padding: 0.75rem; border-radius: 6px; text-align: center; border: var(--border);">
+                            <div style="background: #f9fafb; padding: 0.75rem; border-radius: 8px; text-align: center; border: var(--border);">
                                 <strong style="font-size: 1.1rem; color: var(--text-main);" id="ves-tracker-usd">$0.00</strong>
                             </div>
                         </div>
@@ -344,7 +394,6 @@
                 </div>
             </div>
 
-            <!-- AJUSTES -->
             <div id="ajustes" class="section">
                 <div class="card">
                     <h3>Configuración de Perfil</h3>
@@ -352,14 +401,14 @@
                 </div>
                 <div class="card">
                     <h3>Reglas de Distribución Automática</h3>
-                    <div style="margin-bottom: 2rem; border-bottom: var(--border); padding-bottom: 1rem;">
+                    <div style="margin-bottom: 2rem; border-bottom: var(--border); padding-bottom: 1.5rem;">
                         <label class="toggle-switch">
                             <input type="checkbox" id="toggle-diezmo" onchange="guardarConfiguracion()">
                             <span class="slider"></span>
                             <strong style="color: var(--text-main); font-weight: 500;">Habilitar Deducción Fija (Diezmo 10%)</strong>
                         </label>
                     </div>
-                    <h4 style="font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 1rem;">Añadir Fondo Estructural</h4>
+                    <h4 style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 1rem; font-weight: 600; letter-spacing: 0.05em;">Añadir Fondo Estructural</h4>
                     <form id="fondo-form" class="grid-form" style="margin-bottom: 1.5rem;">
                         <div class="input-group"><label>Nombre del Fondo</label><input type="text" id="fondo-nombre" required></div>
                         <div class="input-group"><label>Asignación (%)</label><input type="number" id="fondo-pct" step="0.1" required></div>
@@ -376,7 +425,6 @@
         </div>
     </div>
 
-    <!-- SCRIPTS FIREBASE Y LÓGICA -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -442,7 +490,6 @@
         window.db_guardarFondo = function(fondo) { const u = auth.currentUser; if (u) update(ref(db), { [`/usuarios/${u.uid}/configuracion/fondos/${fondo.id}`]: fondo }); };
         window.db_eliminarFondo = function(id) { const u = auth.currentUser; if (u) remove(ref(db, `/usuarios/${u.uid}/configuracion/fondos/${id}`)); };
         
-        // Función Firebase para el Laboratorio VES
         window.db_guardarSnapshotVES = function(snap) { const u = auth.currentUser; if (u) update(ref(db), { [`/usuarios/${u.uid}/snapshotsVES/${snap.id}`]: snap }); };
         window.db_eliminarSnapshotVES = function(id) { const u = auth.currentUser; if (u) remove(ref(db, `/usuarios/${u.uid}/snapshotsVES/${id}`)); };
 
@@ -461,13 +508,17 @@
         window.transacciones = []; window.gastosFijos = []; window.snapshotsVES = [];
         window.configuracion = { diezmoActivo: true, fondos: {}, usuarioNombre: "" };
         window.categorias = []; window.subcategorias = [];
+        let chartInstancia = null; // Variable global para la gráfica de Chart.js
 
         function getCaracasDateString() { return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Caracas', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()); }
 
         document.addEventListener("DOMContentLoaded", () => {
-            document.getElementById('fecha').value = getCaracasDateString();
-            document.getElementById('g-fecha').value = getCaracasDateString();
-            document.getElementById('mes-presupuesto').value = getCaracasDateString().slice(0,7);
+            const hoy = getCaracasDateString();
+            document.getElementById('fecha').value = hoy;
+            document.getElementById('g-fecha').value = hoy;
+            document.getElementById('stat-inicio').value = hoy.slice(0,8) + "01"; // Primero del mes actual
+            document.getElementById('stat-fin').value = hoy;
+            document.getElementById('mes-presupuesto').value = hoy.slice(0,7);
         });
 
         window.showSectionMobile = function(id, el) {
@@ -478,7 +529,6 @@
             renderTodo();
         };
 
-        // --- CONEXIÓN AL NUEVO PROXY VERCEL ---
         async function obtenerTasasVercel() {
             const statusEl = document.getElementById('api-status');
             const inputUsd = document.getElementById('tasa-usd-input');
@@ -494,7 +544,7 @@
                     
                     statusEl.textContent = "Conexión Oficial BCV ✓";
                     statusEl.style.color = "var(--income-color)";
-                    statusEl.style.background = "#e8f5e9";
+                    statusEl.style.background = "#d1fae5";
                     renderTodo();
                     calcularEquivalenteVES();
                 } else {
@@ -524,7 +574,6 @@
             document.getElementById('calc-resultado').textContent = `${resultado.toFixed(2)} ${simbolo}`;
         }
 
-        // --- LÓGICA DEL LABORATORIO VES ---
         window.calcularEquivalenteVES = function() {
             const ves = parseFloat(document.getElementById('ves-tracker-input').value) || 0;
             const tasa = getTasa();
@@ -538,36 +587,19 @@
             const tasa = getTasa();
             const usd = tasa > 0 ? ves / tasa : 0;
             
-            const snap = {
-                id: Date.now().toString(),
-                fecha: getCaracasDateString(),
-                ves: ves,
-                tasa: tasa,
-                usd: usd
-            };
+            const snap = { id: Date.now().toString(), fecha: getCaracasDateString(), ves: ves, tasa: tasa, usd: usd };
             
             window.db_guardarSnapshotVES(snap);
             document.getElementById('ves-tracker-input').value = '';
             document.getElementById('ves-tracker-usd').textContent = '$0.00';
         };
 
-        window.elimSnapshotVES = function(id) {
-            if(confirm("¿Eliminar este registro de devaluación?")) {
-                window.db_eliminarSnapshotVES(id);
-            }
-        };
+        window.elimSnapshotVES = function(id) { if(confirm("¿Eliminar este registro de devaluación?")) window.db_eliminarSnapshotVES(id); };
 
         function renderSnapshotsVES() {
-            const tb = document.getElementById('ves-snapshots-body');
-            tb.innerHTML = '';
+            const tb = document.getElementById('ves-snapshots-body'); tb.innerHTML = '';
             [...window.snapshotsVES].sort((a,b) => b.id.localeCompare(a.id)).forEach(s => {
-                tb.innerHTML += `<tr>
-                    <td>${s.fecha}</td>
-                    <td style="color: var(--text-muted);">${s.ves.toFixed(2)} Bs</td>
-                    <td style="font-size: 0.75rem; color: var(--text-muted)">${s.tasa.toFixed(2)} Bs/$</td>
-                    <td style="font-weight: 500; color: var(--expense-color);">$${s.usd.toFixed(2)}</td>
-                    <td><button class="btn-sm btn-delete" onclick="elimSnapshotVES('${s.id}')">Del</button></td>
-                </tr>`;
+                tb.innerHTML += `<tr><td>${s.fecha}</td><td style="color: var(--text-muted);">${s.ves.toFixed(2)} Bs</td><td style="font-size: 0.75rem; color: var(--text-muted)">${s.tasa.toFixed(2)} Bs/$</td><td style="font-weight: 500; color: var(--expense-color);">$${s.usd.toFixed(2)}</td><td><button class="btn-sm btn-delete" onclick="elimSnapshotVES('${s.id}')">Del</button></td></tr>`;
             });
         }
 
@@ -627,9 +659,7 @@
             const cat = document.getElementById('g-categoria').value.trim();
             const sub = document.getElementById('g-subcategoria').value.trim() || "General";
             
-            const nuevaTransaccion = { 
-                id: Date.now().toString(), tipo: 'egreso', categoria: cat, subcategoria: sub, monedaOriginal: 'USD', montoOriginal: usd, tasa: getTasa(), montoUSD: usd, deducciones: {}, fecha: document.getElementById('g-fecha').value 
-            };
+            const nuevaTransaccion = { id: Date.now().toString(), tipo: 'egreso', categoria: cat, subcategoria: sub, monedaOriginal: 'USD', montoOriginal: usd, tasa: getTasa(), montoUSD: usd, deducciones: {}, fecha: document.getElementById('g-fecha').value };
             window.db_guardarTransaccion(nuevaTransaccion);
             window.db_registrarListas(cat, sub);
             document.getElementById('gastos-form').reset();
@@ -643,7 +673,17 @@
             document.getElementById('app-greeting').textContent = window.configuracion.usuarioNombre ? `Panel Ejecutivo: ${window.configuracion.usuarioNombre}` : "Panel Administrativo";
             document.getElementById('toggle-diezmo').checked = window.configuracion.diezmoActivo !== false;
             document.getElementById('config-nombre-usuario').value = window.configuracion.usuarioNombre || "";
-            renderInicio(); renderGastosFijos(); renderAjustes(); renderPresupuesto(); renderTablaGastos(); renderSnapshotsVES();
+            
+            renderInicio(); 
+            renderGastosFijos(); 
+            renderAjustes(); 
+            renderPresupuesto(); 
+            renderTablaGastos(); 
+            renderSnapshotsVES();
+            
+            // Nuevas funciones
+            renderEstadisticas();
+            renderDiezmoSemanas();
         };
 
         function renderInicio() {
@@ -658,7 +698,7 @@
             document.getElementById('global-summary').innerHTML = `
                 <div class="summary-box box-income"><h4>Total Ingresos</h4><p>$${inB.toFixed(2)}</p></div>
                 <div class="summary-box box-expense"><h4>Total Ejecutado</h4><p>$${outB.toFixed(2)}</p></div>
-                <div class="summary-box box-neto" style="grid-column: span 2; border-left: 4px solid var(--accent-gold);"><h4>Capital Operativo (Neto)</h4><p>$${neto.toFixed(2)}</p></div>
+                <div class="summary-box box-neto" style="grid-column: span 2;"><h4>Capital Operativo (Neto)</h4><p>$${neto.toFixed(2)}</p></div>
             `;
 
             const tb = document.getElementById('table-body'); tb.innerHTML = '';
@@ -670,11 +710,137 @@
                     <td><strong style="color:${t.tipo==='ingreso'?'var(--income-color)':'var(--expense-color)'}; font-size:0.8rem;">${t.tipo.toUpperCase()}</strong></td>
                     <td>${t.categoria}${subLabel}</td>
                     <td style="font-weight:500;">$${t.montoUSD.toFixed(2)}</td>
-                    <td style="font-size:0.75rem; color:var(--text-muted);">${dedSt}</td>
+                    <td style="font-size:0.75rem; color:var(--text-muted); line-height: 1.4;">${dedSt}</td>
                     <td><button class="btn-sm btn-delete" onclick="eliminarT('${t.id}')">Del</button></td>
                 </tr>`;
             });
         }
+
+        // LÓGICA ESTADÍSTICAS CHART.JS
+        window.renderEstadisticas = function() {
+            const ini = document.getElementById('stat-inicio').value; 
+            const fin = document.getElementById('stat-fin').value;
+            
+            const ingresos = window.transacciones.filter(t => t.tipo === 'ingreso' && (!ini || t.fecha >= ini) && (!fin || t.fecha <= fin));
+            
+            let totalG = 0;
+            const agrupado = {};
+            
+            ingresos.forEach(t => {
+                totalG += t.montoUSD;
+                agrupado[t.categoria] = (agrupado[t.categoria] || 0) + t.montoUSD;
+            });
+
+            document.getElementById('stat-total-ingresos').textContent = `$${totalG.toFixed(2)}`;
+            
+            const labels = Object.keys(agrupado);
+            const dataVals = Object.values(agrupado);
+            
+            // Actualizar Tabla de Stats
+            const tb = document.getElementById('stat-table-body');
+            tb.innerHTML = '';
+            labels.forEach(l => {
+                let m = agrupado[l];
+                let pct = totalG > 0 ? ((m / totalG) * 100).toFixed(1) : 0;
+                tb.innerHTML += `<tr><td>${l}</td><td style="font-weight: 500;">$${m.toFixed(2)}</td><td><span class="status-badge" style="background:#f3f4f6;">${pct}%</span></td></tr>`;
+            });
+
+            // Actualizar Chart
+            const ctx = document.getElementById('ingresosChart').getContext('2d');
+            if (chartInstancia) chartInstancia.destroy();
+            
+            const colores = ['#d4af37', '#111827', '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444'];
+            
+            chartInstancia = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: dataVals,
+                        backgroundColor: colores.slice(0, labels.length),
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { usePointStyle: true, font: { family: "'Inter', sans-serif" } } } },
+                    cutout: '70%'
+                }
+            });
+        };
+
+        // LÓGICA DE DIEZMO AGRUPADO POR SEMANAS
+        window.renderDiezmoSemanas = function() {
+            // Filtrar transacciones que tienen Diezmo
+            const transDiezmo = window.transacciones.filter(t => t.tipo === 'ingreso' && t.deducciones && t.deducciones['Diezmo']);
+            
+            const gruposSemanas = {};
+
+            transDiezmo.forEach(t => {
+                const montoD = t.deducciones['Diezmo'];
+                const montoBs = montoD * t.tasa;
+                
+                // Determinar el Lunes de la semana de la transacción
+                const d = new Date(t.fecha + "T00:00:00");
+                const diaSemana = d.getDay() || 7; // Convertir domingo (0) a 7
+                d.setDate(d.getDate() - diaSemana + 1); // Lunes
+                const inicioSemanaStr = new Intl.DateTimeFormat('es-VE', {day: '2-digit', month: '2-digit', year: 'numeric'}).format(d);
+                
+                const dFin = new Date(d);
+                dFin.setDate(dFin.getDate() + 6); // Domingo
+                const finSemanaStr = new Intl.DateTimeFormat('es-VE', {day: '2-digit', month: '2-digit', year: 'numeric'}).format(dFin);
+
+                const clave = `Semana del ${inicioSemanaStr} al ${finSemanaStr}`;
+
+                if(!gruposSemanas[clave]) gruposSemanas[clave] = [];
+                gruposSemanas[clave].push({ fecha: t.fecha, tasa: t.tasa, usd: montoD, bs: montoBs });
+            });
+
+            const contenedor = document.getElementById('diezmo-container');
+            contenedor.innerHTML = '';
+
+            const keys = Object.keys(gruposSemanas).sort((a,b) => b.localeCompare(a)); // Orden descendente
+
+            if (keys.length === 0) {
+                contenedor.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding: 2rem;">No hay registros de diezmo procesados.</p>';
+                return;
+            }
+
+            keys.forEach(k => {
+                const registros = gruposSemanas[k];
+                let totalUSD = 0, totalBs = 0;
+                let rows = '';
+
+                registros.sort((a,b) => b.fecha.localeCompare(a.fecha)).forEach(r => {
+                    totalUSD += r.usd; totalBs += r.bs;
+                    rows += `<tr>
+                        <td>${r.fecha}</td>
+                        <td style="color:var(--text-muted); font-size: 0.8rem;">${r.tasa.toFixed(2)} Bs/$</td>
+                        <td style="color:var(--income-color); font-weight:500;">$${r.usd.toFixed(2)}</td>
+                        <td>${r.bs.toFixed(2)} Bs</td>
+                    </tr>`;
+                });
+
+                contenedor.innerHTML += `
+                <div class="budget-block" style="margin-bottom: 1.5rem; border-left: 4px solid var(--accent-gold);">
+                    <div class="budget-block-header" style="background: #ffffff; flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+                        <span style="font-size: 0.9rem; color: var(--text-muted);">${k}</span>
+                        <div style="display:flex; width: 100%; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 1.2rem; color: var(--text-main); font-weight: 600;">Total: $${totalUSD.toFixed(2)}</span>
+                            <span class="budget-block-pct" style="background: #fdfdfd; border: 1px solid #e5e7eb;">${totalBs.toFixed(2)} Bs</span>
+                        </div>
+                    </div>
+                    <div class="table-responsive" style="border: none; border-radius: 0;">
+                        <table style="margin-top: 0;">
+                            <thead><tr><th>Fecha</th><th>Tasa BCV</th><th>Diezmo ($)</th><th>Diezmo (Bs)</th></tr></thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                </div>`;
+            });
+        };
 
         function renderTablaGastos() {
             const ini = document.getElementById('g-filtro-inicio').value; const fin = document.getElementById('g-filtro-fin').value;
@@ -709,8 +875,8 @@
             const hoy = new Date(getCaracasDateString()+"T00:00:00");
             [...window.gastosFijos].sort((a,b)=> new Date(a.proxima) - new Date(b.proxima)).forEach(g => {
                 let diff = Math.ceil((new Date(g.proxima+"T00:00:00") - hoy) / 86400000);
-                let est = diff === 0 ? '<span class="status-badge" style="background:#fdf2f2; color:#c62828;">Hoy</span>' : (diff < 0 ? '<span class="status-badge" style="background:#f0f0f0; color:#737373;">Vencido</span>' : `En ${diff} d`);
-                tb.innerHTML += `<tr><td>${g.nombre}</td><td style="font-weight:500;">$${g.monto.toFixed(2)}</td><td style="text-transform:capitalize">${g.frecuencia}</td><td>${g.proxima}</td><td>${est}</td><td><div class="action-btns"><button class="btn-sm btn-pay" onclick="pagarGF('${g.id}')">Pagado</button><button class="btn-sm btn-delete" onclick="elimGF('${g.id}')">Del</button></div></td></tr>`;
+                let est = diff === 0 ? '<span class="status-badge" style="background:#fee2e2; color:#ef4444;">Hoy</span>' : (diff < 0 ? '<span class="status-badge" style="background:#e5e7eb; color:#6b7280;">Vencido</span>' : `En ${diff} d`);
+                tb.innerHTML += `<tr><td>${g.nombre}</td><td style="font-weight:600;">$${g.monto.toFixed(2)}</td><td style="text-transform:capitalize">${g.frecuencia}</td><td>${g.proxima}</td><td>${est}</td><td><div class="action-btns"><button class="btn-sm btn-pay" onclick="pagarGF('${g.id}')">Pagado</button><button class="btn-sm btn-delete" onclick="elimGF('${g.id}')">Del</button></div></td></tr>`;
             });
         }
 
@@ -752,7 +918,7 @@
             let fAcum = {}; window.transacciones.forEach(t => { if(t.tipo==='ingreso') for(let k in t.deducciones) fAcum[k] = (fAcum[k]||0) + t.deducciones[k]; });
             let tb = document.getElementById('fondos-body'); tb.innerHTML = '';
             const lista = window.configuracion.fondos ? Object.values(window.configuracion.fondos) : [];
-            lista.forEach(f => { tb.innerHTML += `<tr><td>${f.nombre}</td><td>${f.pct}%</td><td style="font-weight:bold; color:var(--accent-gold)">$${(fAcum[f.nombre] || 0).toFixed(2)}</td><td><button class="btn-sm btn-delete" onclick="elimFondo('${f.id}')">Del</button></td></tr>`; });
+            lista.forEach(f => { tb.innerHTML += `<tr><td>${f.nombre}</td><td>${f.pct}%</td><td style="font-weight:600; color:var(--text-main)">$${(fAcum[f.nombre] || 0).toFixed(2)}</td><td><button class="btn-sm btn-delete" onclick="elimFondo('${f.id}')">Del</button></td></tr>`; });
         }
 
         let workerEspera = null;
@@ -777,7 +943,7 @@
             window.location.reload();
         });
 
-        // Llamada al proxy corregido
+        // Llamada al proxy
         obtenerTasasVercel();
     </script>
 </body>
