@@ -102,7 +102,6 @@
         @media (min-width: 768px) { .grid-form { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); } }
         .input-group { display: flex; flex-direction: column; width: 100%; }
         label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 600; }
-        /* font-size 16px evita el zoom automático en iOS */
         input, select { padding: 0.85rem 1.2rem; border: 1px solid var(--input-border); border-radius: 12px; font-size: 16px; outline: none; background: var(--input-bg); width: 100%; color: var(--text-main); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         input:focus, select:focus { border-color: var(--accent-gold); box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.15); background: var(--card-bg); transform: translateY(-1px); }
         
@@ -133,7 +132,6 @@
         .action-btns { display: flex; gap: 0.4rem; flex-wrap: wrap; }
         .btn-sm { padding: 0.4rem 0.6rem; font-size: 0.75rem; border-radius: 8px; font-weight: 600; }
         .currency-container { display: grid; grid-template-columns: 80px 1fr; gap: 0.5rem; }
-        /* Soporte táctil suave para tablas en móviles */
         .table-responsive { overflow-x: auto; border-radius: 12px; border: var(--border); background: var(--card-bg); -webkit-overflow-scrolling: touch; }
         .filter-container { display: flex; flex-direction: column; gap: 1rem; background: var(--input-bg); padding: 1.2rem; border-radius: 16px; border: var(--border); margin-bottom: 1.5rem; align-items: stretch; }
         @media (min-width: 768px) { .filter-container { flex-direction: row; align-items: flex-end; } }
@@ -155,69 +153,35 @@
         input:checked + .slider { background: var(--accent-gold); }
         input:checked + .slider::before { transform: translateX(20px); }
 
-        /* Navegación Móvil Adaptada */
         .bottom-nav { 
-            position: fixed; 
-            bottom: 0; 
-            left: 0; 
-            width: 100%; 
-            background: var(--glass-bg); 
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            display: flex; 
-            align-items: center; 
-            height: calc(70px + env(safe-area-inset-bottom)); 
-            z-index: 1000; 
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.05); 
-            justify-content: space-around; 
-            padding: 0 0.5rem env(safe-area-inset-bottom) 0.5rem; 
-            border-top: var(--border);
+            position: fixed; bottom: 0; left: 0; width: 100%; background: var(--glass-bg); 
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); display: flex; 
+            align-items: center; height: calc(70px + env(safe-area-inset-bottom)); z-index: 1000; 
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.05); justify-content: space-around; 
+            padding: 0 0.5rem env(safe-area-inset-bottom) 0.5rem; border-top: var(--border);
         }
-
         .bottom-nav a { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            color: var(--text-muted); 
-            text-decoration: none; 
-            font-size: 0.7rem; 
-            font-weight: 600; 
-            transition: all 0.3s;
-            width: 20%; 
-            padding: 0.5rem 0;
-            border-radius: 12px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            color: var(--text-muted); text-decoration: none; font-size: 0.7rem; font-weight: 600; 
+            transition: all 0.3s; width: 20%; padding: 0.5rem 0; border-radius: 12px;
         }
-
         .bottom-nav a .nav-icon { font-size: 1.3rem; margin-bottom: 2px; transition: all 0.3s; }
         .bottom-nav a:hover { background: var(--input-bg); }
         .bottom-nav a.active-link { color: var(--accent-gold); }
         .bottom-nav a.active-link .nav-icon { transform: translateY(-4px) scale(1.1); filter: drop-shadow(0 4px 6px rgba(212, 175, 55, 0.3)); }
 
         .fab-button {
-            position: fixed;
-            bottom: calc(90px + env(safe-area-inset-bottom));
-            right: 20px;
+            position: fixed; bottom: calc(90px + env(safe-area-inset-bottom)); right: 20px;
             background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-gold-hover) 100%);
-            color: white;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.8rem;
-            box-shadow: 0 10px 25px rgba(212, 175, 55, 0.4);
-            cursor: pointer;
-            z-index: 999;
-            transition: all 0.3s;
-            border: none;
-            padding: 0;
+            color: white; width: 56px; height: 56px; border-radius: 50%; display: flex;
+            justify-content: center; align-items: center; font-size: 1.8rem;
+            box-shadow: 0 10px 25px rgba(212, 175, 55, 0.4); cursor: pointer; z-index: 999;
+            transition: all 0.3s; border: none; padding: 0;
         }
         .fab-button:hover { transform: translateY(-5px) scale(1.05); box-shadow: 0 15px 30px rgba(212, 175, 55, 0.5); }
 
         .progress-bar-container { width: 100%; background-color: var(--input-bg); border-radius: 10px; height: 10px; margin-top: 10px; overflow: hidden; border: var(--border); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
-        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--income-color) 0%, #34d399 100%); border-radius: 10px; transition: width 0.6s; box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+        .progress-bar-fill { height: 100%; border-radius: 10px; transition: width 0.6s; }
 
         .status-badge { display: inline-block; padding: 0.3rem 0.6rem; border-radius: 20px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.03em; }
         .centro-badge { background: var(--input-bg); border: 1px solid var(--input-border); padding: 0.3rem 0.5rem; border-radius: 6px; font-size: 0.7rem; color: var(--text-muted); display: inline-block; margin-top: 4px; font-weight: 600; white-space: nowrap;}
@@ -227,14 +191,12 @@
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); z-index: 1001; justify-content: center; align-items: flex-end; }
         .modal-overlay.active { display: flex; }
         @media (min-width: 768px) { .modal-overlay { align-items: center; } }
-        /* Ajuste de modal para móviles */
         .modal-content { background: var(--card-bg); width: 100%; max-width: 600px; border-radius: 24px 24px 0 0; padding: 2rem 1.5rem; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); position: relative; max-height: 90vh; overflow-y: auto; box-shadow: 0 -20px 40px rgba(0,0,0,0.2); border: var(--border); }
         @media (min-width: 768px) { .modal-content { border-radius: 24px; padding: 2.5rem 2rem; } }
         .modal-close { position: absolute; top: 1.2rem; right: 1.2rem; background: var(--input-bg); border: var(--border); font-size: 1.2rem; color: var(--text-main); cursor: pointer; padding: 0; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
         
         @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        /* Ajustes menores de responsividad */
         @media (max-width: 480px) {
             .summary-grid { grid-template-columns: 1fr; }
             .grid-form { grid-template-columns: 1fr; }
@@ -243,8 +205,6 @@
     </style>
 </head>
 <body data-theme="light">
-
-    <div id="update-toast" style="display: none;"></div>
 
     <div class="auth-container" id="auth-container">
         <div class="auth-card">
@@ -274,7 +234,7 @@
                     <label>Tipo de Operación</label>
                     <select id="tipo" required><option value="ingreso">Ingreso</option><option value="egreso">Egreso</option></select>
                 </div>
-                <div class="input-group"><label>Categoría</label><input type="text" id="categoria" list="lista-categorias" required autocomplete="off" placeholder="Ej. Ventas, Servicios..."><datalist id="lista-categorias"></datalist></div>
+                <div class="input-group"><label>Categoría</label><input type="text" id="categoria" list="lista-categorias" required autocomplete="off" placeholder="Ej. Ventas, Servicios, Ocio, Hogar..."><datalist id="lista-categorias"></datalist></div>
                 <div class="input-group"><label>Subcategoría (Opcional)</label><input type="text" id="subcategoria" list="lista-subcategorias" autocomplete="off" placeholder="Ej. Efectivo, Tarjeta..."><datalist id="lista-subcategorias"></datalist></div>
                 <div class="input-group">
                     <label>Monto</label>
@@ -418,7 +378,7 @@
             <div id="estadisticas" class="section">
                 <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; background: var(--input-bg); padding: 0.5rem; border-radius: 16px; border: var(--border);">
                     <button class="btn-outline" onclick="mostrarSubseccionStats('s-graficas')" id="btn-s-graficas" style="background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: none; flex: 1;">Gráficas</button>
-                    <button class="btn-outline" onclick="mostrarSubseccionStats('s-matriz')" id="btn-s-matriz" style="border: none; flex: 1;">Matriz</button>
+                    <button class="btn-outline" onclick="mostrarSubseccionStats('s-matriz')" id="btn-s-matriz" style="border: none; flex: 1;">Presupuestos</button>
                     <button class="btn-outline" onclick="mostrarSubseccionStats('s-diezmo')" id="btn-s-diezmo" style="border: none; flex: 1;">Diezmo</button>
                 </div>
 
@@ -453,16 +413,46 @@
                     </div>
                 </div>
 
+                <!-- NUEVA SECCIÓN: PRESUPUESTO MENSUAL INTEGRADO -->
                 <div id="s-matriz" style="display: none;">
                     <div class="card">
-                        <h3>Presupuesto y Gastos</h3>
-                        <div class="filter-container"><div class="input-group"><label>Mes de Análisis:</label><input type="month" id="mes-presupuesto" onchange="renderPresupuesto()"></div></div>
-                        <div class="summary-grid">
-                            <div class="summary-box box-neto"><h4>Ingreso Disponible</h4><p id="matriz-ind">$0.00</p></div>
-                            <div class="summary-box box-expense"><h4>Total Ejecutado</h4><p id="matriz-gastos">$0.00</p></div>
-                            <div class="summary-box" id="matriz-balance-box" style="border: var(--border); grid-column: span 1;"><h4>Nivel Ejecución</h4><p id="matriz-balance" style="color: var(--text-main);">0%</p></div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 1rem;">
+                            <h3>Presupuesto Mensual por Categoría</h3>
+                            <div class="input-group" style="max-width: 200px;">
+                                <label>Mes de Análisis</label>
+                                <input type="month" id="mes-presupuesto" onchange="renderPresupuesto()">
+                            </div>
                         </div>
-                        <div class="budget-matrix-grid" id="matriz-bloques-contenedor"></div>
+
+                        <div class="summary-grid" style="margin-bottom: 1.5rem;">
+                            <div class="summary-box box-income">
+                                <h4>Límite Total Presupuestado</h4>
+                                <p id="presupuesto-total-limite">$0.00</p>
+                            </div>
+                            <div class="summary-box box-expense">
+                                <h4>Total Gastado en el Mes</h4>
+                                <p id="presupuesto-total-gastado">$0.00</p>
+                            </div>
+                        </div>
+
+                        <form id="form-presupuesto" class="grid-form" style="margin-bottom: 1.5rem; background: var(--input-bg); padding: 1.2rem; border-radius: 16px; border: var(--border);">
+                            <div class="input-group">
+                                <label>Categoría</label>
+                                <input type="text" id="presupuesto-cat" list="lista-categorias" required autocomplete="off" placeholder="Ej. Ocio, Hogar, Deudas...">
+                            </div>
+                            <div class="input-group">
+                                <label>Límite Mensual ($)</label>
+                                <input type="number" id="presupuesto-limite" step="0.01" min="0" required placeholder="0.00">
+                            </div>
+                            <div class="input-group" style="justify-content: flex-end;">
+                                <label>&nbsp;</label>
+                                <button type="submit" class="btn-primary" style="padding: 0.85rem;">Guardar Límite</button>
+                            </div>
+                        </form>
+
+                        <div id="contenedor-barras-presupuesto" style="display: flex; flex-direction: column; gap: 1rem;">
+                            <!-- Inyectado dinámicamente -->
+                        </div>
                     </div>
                 </div>
 
@@ -529,7 +519,6 @@
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref, update, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // CREDENCIALES INTACTAS
         const firebaseConfig = {
             apiKey: "AIzaSyDd0MJknaXe7A_WVq_CvGx7Zwy4X-7gjlE",
             authDomain: "control-financiero-deb61.firebaseapp.com",
@@ -549,7 +538,7 @@
 
         window.logoutUsuario = function() { 
             signOut(auth).then(() => {
-                window.transacciones = []; window.gastosFijos = []; window.metasAhorro = [];
+                window.transacciones = []; window.gastosFijos = []; window.metasAhorro = []; window.presupuestos = [];
                 window.configuracion = { diezmoActivo: true, fondos: {}, usuarioNombre: "" };
                 renderTodo();
             }); 
@@ -572,15 +561,14 @@
                 window.transacciones = data.transacciones ? Object.values(data.transacciones) : [];
                 window.gastosFijos = data.gastosFijos ? Object.values(data.gastosFijos) : [];
                 window.metasAhorro = data.metas ? Object.values(data.metas) : [];
+                window.presupuestos = data.presupuestos ? Object.values(data.presupuestos) : [];
                 window.configuracion = data.configuracion || { diezmoActivo: true, fondos: {}, usuarioNombre: "" };
                 if (Array.isArray(window.configuracion.fondos)) window.configuracion.fondos = {};
 
-                // --- LIENZO EN BLANCO: Si no hay listas guardadas, inician en un arreglo vacío ---
                 window.centros = data.centros ? Object.values(data.centros) : [];
                 window.categorias = data.categorias ? Object.values(data.categorias) : [];
                 window.subcategorias = data.subcategorias ? Object.values(data.subcategorias) : [];
                 
-                // LÓGICA WIDGET NATIVA MANTENIDA
                 let inB = 0, outB = 0, fAcum = {};
                 window.transacciones.forEach(t => {
                     if(t.tipo === 'ingreso') { 
@@ -613,8 +601,11 @@
         window.db_eliminarFondo = function(id) { const u = auth.currentUser; if (u) remove(ref(db, `/usuarios/${u.uid}/configuracion/fondos/${id}`)); };
         window.db_guardarMeta = function(meta) { const u = auth.currentUser; if(u) update(ref(db), { [`/usuarios/${u.uid}/metas/${meta.id}`]: meta }); };
         window.db_eliminarMeta = function(id) { const u = auth.currentUser; if(u) remove(ref(db, `/usuarios/${u.uid}/metas/${id}`)); };
+        
+        // Métodos Firebase para Presupuestos Mensuales
+        window.db_guardarPresupuesto = function(p) { const u = auth.currentUser; if(u) update(ref(db), { [`/usuarios/${u.uid}/presupuestos/${p.id}`]: p }); };
+        window.db_eliminarPresupuesto = function(id) { const u = auth.currentUser; if(u) remove(ref(db, `/usuarios/${u.uid}/presupuestos/${id}`)); };
 
-        // MODIFICADO: Ahora también registra nuevos Centros de Costo dinámicamente
         window.db_registrarListas = function(cat, sub, centro) {
             const u = auth.currentUser;
             if (u) {
@@ -639,7 +630,7 @@
         const savedTheme = localStorage.getItem("theme") || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         document.body.setAttribute("data-theme", savedTheme);
 
-        window.transacciones = []; window.gastosFijos = []; window.metasAhorro = [];
+        window.transacciones = []; window.gastosFijos = []; window.metasAhorro = []; window.presupuestos = [];
         window.configuracion = { diezmoActivo: true, fondos: {}, usuarioNombre: "" };
         window.categorias = []; window.subcategorias = []; window.centros = [];
         let chartInstancia = null; 
@@ -727,13 +718,11 @@
 
         window.guardarPersonalizacion = function() { window.db_actualizarConfiguracion({ usuarioNombre: document.getElementById('config-nombre-usuario').value }); };
         
-        // MODIFICADO: Actualiza datalists de Centros de Costo también
         function actDatalists() {
             document.getElementById('lista-categorias').innerHTML = window.categorias.map(c=>`<option value="${c}">`).join('');
             document.getElementById('lista-subcategorias').innerHTML = window.subcategorias.map(s=>`<option value="${s}">`).join('');
             document.getElementById('lista-centros').innerHTML = window.centros.map(c=>`<option value="${c}">`).join('');
             
-            // Actualiza los selectores de los filtros con los centros guardados
             const centrosOptions = '<option value="Todos">Todos los centros</option>' + window.centros.map(c=>`<option value="${c}">${c}</option>`).join('');
             document.getElementById('g-filtro-centro').innerHTML = centrosOptions;
             document.getElementById('stat-centro').innerHTML = centrosOptions;
@@ -764,7 +753,7 @@
         document.getElementById('finance-form').addEventListener('submit', e => {
             e.preventDefault();
             const tipo = document.getElementById('tipo').value;
-            const centro = document.getElementById('centro').value.trim(); // Ahora es dinámico
+            const centro = document.getElementById('centro').value.trim();
             const moneda = document.getElementById('moneda').value;
             const orig = parseFloat(document.getElementById('monto').value);
             const tasa = getTasa();
@@ -779,7 +768,7 @@
             };
 
             window.db_guardarTransaccion(nuevaTransaccion);
-            window.db_registrarListas(cat, sub, centro); // Se envía también el centro a la DB
+            window.db_registrarListas(cat, sub, centro);
             cerrarModal();
         });
 
@@ -886,6 +875,98 @@
             });
         };
 
+        // LÓGICA DE GESTIÓN Y GUARDADO DE PRESUPUESTOS MENSUALES
+        document.getElementById('form-presupuesto')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const mes = document.getElementById('mes-presupuesto').value;
+            const categoria = document.getElementById('presupuesto-cat').value.trim();
+            const limite = parseFloat(document.getElementById('presupuesto-limite').value) || 0;
+            
+            // Buscar si ya existe presupuesto para esta categoría y mes exacto
+            let existente = window.presupuestos.find(p => p.mes === mes && p.categoria.toLowerCase() === categoria.toLowerCase());
+            let id = existente ? existente.id : Date.now().toString();
+
+            const nuevoPresupuesto = { id, mes, categoria, limite };
+            window.db_guardarPresupuesto(nuevoPresupuesto);
+            document.getElementById('form-presupuesto').reset();
+        });
+
+        window.eliminarPresupuesto = function(id) {
+            if(confirm("¿Eliminar este límite de presupuesto?")) {
+                window.db_eliminarPresupuesto(id);
+            }
+        };
+
+        window.renderPresupuesto = function() {
+            const mesSeleccionado = document.getElementById('mes-presupuesto').value;
+            const presupuestosMes = window.presupuestos.filter(p => p.mes === mesSeleccionado);
+            const gastosMes = window.transacciones.filter(t => t.tipo === 'egreso' && t.fecha.startsWith(mesSeleccionado));
+
+            let sumaTotalLimite = 0;
+            let sumaTotalGastado = 0;
+            let htmlContenedor = '';
+
+            const gastosPorCat = {};
+            gastosMes.forEach(t => {
+                let cat = t.categoria || "Otros";
+                gastosPorCat[cat] = (gastosPorCat[cat] || 0) + t.montoUSD;
+            });
+
+            const categoriasUnicas = new Set([...presupuestosMes.map(p => p.categoria), ...Object.keys(gastosPorCat)]);
+
+            categoriasUnicas.forEach(cat => {
+                const pObj = presupuestosMes.find(p => p.categoria.toLowerCase() === cat.toLowerCase());
+                const limiteCat = pObj ? pObj.limite : 0;
+                const gastadoCat = gastosPorCat[cat] || 0;
+                const idPresupuesto = pObj ? pObj.id : null;
+                
+                sumaTotalLimite += limiteCat;
+                sumaTotalGastado += gastadoCat;
+
+                const porcentaje = limiteCat > 0 ? (gastadoCat / limiteCat) * 100 : (gastadoCat > 0 ? 100 : 0);
+                
+                let colorBarra = 'var(--income-color)'; // Verde < 80%
+                let estadoBadge = '';
+
+                if(porcentaje >= 100) {
+                    colorBarra = 'var(--expense-color)'; // Rojo >= 100%
+                    estadoBadge = '<span class="status-badge" style="background:var(--expense-bg); color:var(--expense-color);">¡Superado! 🚨</span>';
+                } else if(porcentaje >= 80) {
+                    colorBarra = '#f59e0b'; // Amarillo / Alerta >= 80%
+                    estadoBadge = '<span class="status-badge" style="background:rgba(245, 158, 11, 0.1); color:#f59e0b;">Alerta 80% ⚠️</span>';
+                }
+
+                htmlContenedor += `
+                    <div style="background: var(--card-bg); border: var(--border); padding: 1.2rem; border-radius: 14px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+                            <div>
+                                <strong style="font-size: 1rem; color: var(--text-main);">${cat}</strong>
+                                ${estadoBadge}
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div style="text-align: right;">
+                                    <span style="font-weight: 700; font-size: 0.95ln; color: var(--text-main);">$${gastadoCat.toFixed(2)}</span> 
+                                    <span style="color: var(--text-muted); font-size: 0.85rem;">/ $${limiteCat.toFixed(2)}</span>
+                                </div>
+                                ${idPresupuesto ? `<button class="btn-sm btn-delete" onclick="eliminarPresupuesto('${idPresupuesto}')" title="Borrar límite">✕</button>` : ''}
+                            </div>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" style="width: ${Math.min(porcentaje, 100)}%; background: ${colorBarra}; box-shadow: 0 0 10px ${colorBarra}40;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
+                            <span>Ejecución: ${porcentaje.toFixed(1)}%</span>
+                            ${limiteCat === 0 ? '<span style="color:var(--expense-color)">Sin límite configurado</span>' : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('presupuesto-total-limite').textContent = `$${sumaTotalLimite.toFixed(2)}`;
+            document.getElementById('presupuesto-total-gastado').textContent = `$${sumaTotalGastado.toFixed(2)}`;
+            document.getElementById('contenedor-barras-presupuesto').innerHTML = htmlContenedor || '<p style="text-align:center; color:var(--text-muted); padding: 1.5rem;">No hay presupuestos ni gastos registrados para este mes.</p>';
+        };
+
         document.getElementById('metas-form').addEventListener('submit', e => {
             e.preventDefault();
             const meta = { id: Date.now().toString(), nombre: document.getElementById('meta-nombre').value, objetivo: parseFloat(document.getElementById('meta-objetivo').value), actual: 0 };
@@ -913,7 +994,7 @@
                         </div>
                         <span style="font-weight: 700; font-size: 1.2rem; color: var(--accent-gold);">${pct.toFixed(0)}%</span>
                     </div>
-                    <div class="progress-bar-container"><div class="progress-bar-fill" style="width: ${pct}%"></div></div>
+                    <div class="progress-bar-container"><div class="progress-bar-fill" style="width: ${pct}%; background: var(--income-color)"></div></div>
                     <div style="margin-top: 1.2rem; display: flex; gap: 0.5rem;">
                         <button class="btn-sm btn-pay" onclick="abonarMeta('${m.id}')" style="flex:1; justify-content:center;">Abonar</button>
                         <button class="btn-sm btn-delete" onclick="elimMeta('${m.id}')">Del</button>
@@ -958,19 +1039,6 @@
                 tb.innerHTML += `<tr><td style="font-weight:600;">${g.nombre}</td><td style="font-weight:700; font-size: 1rem; color:var(--text-main);">$${g.monto.toFixed(2)}</td><td style="text-transform:capitalize; font-weight:500;">${g.frecuencia}</td><td style="font-weight:500;">${g.proxima}</td><td>${est}</td><td><div class="action-btns"><button class="btn-sm btn-pay" onclick="pagarGF('${g.id}')">Pagado</button><button class="btn-sm btn-delete" onclick="elimGF('${g.id}')">Del</button></div></td></tr>`;
             });
         }
-
-        window.renderPresupuesto = function() {
-            const mes = document.getElementById('mes-presupuesto').value; let ind = 0, gas = 0, desglose = {};
-            window.transacciones.filter(t => t.fecha.startsWith(mes)).forEach(t => {
-                if (t.tipo === 'ingreso') { ind += t.montoUSD; for (let k in t.deducciones) ind -= t.deducciones[k]; } 
-                else if (t.tipo === 'egreso') { gas += t.montoUSD; let cat = t.categoria || "Otros"; let sub = t.subcategoria || "General"; if (!desglose[cat]) desglose[cat] = { total: 0, subcats: {} }; desglose[cat].total += t.montoUSD; desglose[cat].subcats[sub] = (desglose[cat].subcats[sub] || 0) + t.montoUSD; }
-            });
-            document.getElementById('matriz-ind').textContent = `$${ind.toFixed(2)}`; document.getElementById('matriz-gastos').textContent = `$${gas.toFixed(2)}`;
-            let pctUso = ind > 0 ? ((gas / ind) * 100).toFixed(0) : 0; document.getElementById('matriz-balance').textContent = pctUso + "%";
-            let bBox = document.getElementById('matriz-balance-box'); if(pctUso > 100) { bBox.style.borderLeft = "4px solid var(--expense-color)"; bBox.style.background = "var(--expense-bg)"; } else { bBox.style.borderLeft = "4px solid var(--income-color)"; bBox.style.background = "var(--card-bg)"; }
-            let contenedor = document.getElementById('matriz-bloques-contenedor'); contenedor.innerHTML = '';
-            for (let cat in desglose) { let bloque = desglose[cat]; let pctBloque = gas > 0 ? ((bloque.total / gas) * 100).toFixed(0) : 0; let html = `<div class="budget-block"><div class="budget-block-header"><span>${cat}</span><span class="budget-block-pct">$${bloque.total.toFixed(2)} (${pctBloque}%)</span></div>`; for (let sub in bloque.subcats) html += `<div class="budget-row"><span class="budget-row-label">${sub}</span><span class="budget-row-val">$${bloque.subcats[sub].toFixed(2)}</span></div>`; contenedor.innerHTML += html + `</div>`; }
-        };
 
         window.guardarConfiguracion = function() { window.db_actualizarConfiguracion({ diezmoActivo: document.getElementById('toggle-diezmo').checked }); };
         document.getElementById('fondo-form').addEventListener('submit', e => { e.preventDefault(); window.db_guardarFondo({ id: Date.now().toString(), nombre: document.getElementById('fondo-nombre').value, pct: parseFloat(document.getElementById('fondo-pct').value) }); document.getElementById('fondo-form').reset(); });
